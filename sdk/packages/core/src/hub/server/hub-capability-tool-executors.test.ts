@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
-import { handleCapabilityProgress } from "./handlers/capability-handlers";
-import type { HubTransportContext } from "./handlers/context";
+import {
+	cancelPendingCapabilityRequests,
+	handleCapabilityProgress,
+	handleCapabilityRespond,
+	requestCapability,
+} from "./handlers/capability-handlers";
+import { buildHubEvent, type HubTransportContext } from "./handlers/context";
 import {
 	createHubClientContributionRuntime,
 	HUB_USER_INSTRUCTIONS_SNAPSHOT_CAPABILITY,
@@ -129,6 +134,89 @@ describe("hub capability custom tools", () => {
 			"client-1",
 			expect.any(Function),
 		);
+	});
+});
+
+describe("requestCapability", () => {
+	function createHubContext(): HubTransportContext {
+		return {
+			pendingCapabilityRequests: new Map(),
+			publish: vi.fn(),
+			buildEvent: buildHubEvent,
+		} as unknown as HubTransportContext;
+	}
+
+	it("rejects cancelled requests with AbortError identity", async () => {
+		const ctx = createHubContext();
+		const request = requestCapability(
+			ctx,
+			"session-1",
+			"hook.beforeRun",
+			{},
+			"client-1",
+		);
+		const rejection = expect(request).rejects.toMatchObject({
+			name: "AbortError",
+			message: "Client client-1 detached from session session-1.",
+		});
+
+		expect(
+			cancelPendingCapabilityRequests(
+				ctx,
+				(pending) => pending.targetClientId === "client-1",
+				"Client client-1 detached from session session-1.",
+			),
+		).toBe(1);
+
+		await rejection;
+		expect(ctx.pendingCapabilityRequests.size).toBe(0);
+		expect(ctx.publish).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				event: "capability.resolved",
+				payload: expect.objectContaining({ ok: false, cancelled: true }),
+			}),
+		);
+	});
+
+	it.each([
+		{
+			error: "Capability execution failed.",
+			message: "Capability execution failed.",
+		},
+		{
+			error: undefined,
+			message: "Capability hook.beforeRun was rejected by client-1.",
+		},
+	])("keeps client failures as ordinary errors: $message", async ({
+		error,
+		message,
+	}) => {
+		const ctx = createHubContext();
+		const request = requestCapability(
+			ctx,
+			"session-1",
+			"hook.beforeRun",
+			{},
+			"client-1",
+		);
+		const rejection = expect(request).rejects.toMatchObject({
+			name: "Error",
+			message,
+		});
+		const [requestId] = ctx.pendingCapabilityRequests.keys();
+
+		const reply = handleCapabilityRespond(ctx, {
+			version: "v1",
+			command: "capability.respond",
+			requestId: "request-1",
+			clientId: "client-1",
+			sessionId: "session-1",
+			payload: { requestId, ok: false, error },
+		});
+
+		await rejection;
+		expect(reply.ok).toBe(true);
+		expect(ctx.pendingCapabilityRequests.size).toBe(0);
 	});
 });
 

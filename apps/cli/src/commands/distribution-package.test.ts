@@ -56,6 +56,15 @@ async function generatedPlatformManifests(version: string) {
 }
 
 describe("CLI distribution package shape", () => {
+	it("embeds SDK runtime identity in both source-bundling build paths", async () => {
+		for (const buildPath of ["script/build.ts", "bun.mts"]) {
+			const script = await readFile(join(cliRoot, buildPath), "utf8");
+			expect(script).toContain("resolveSdkRuntimeBuildId");
+			expect(script).toContain("__CLINE_CORE_RUNTIME_BUILD_ID__:");
+			expect(script).toContain("__CLINE_CORE_RUNTIME_BUILD_EPOCH_MS__:");
+		}
+	});
+
 	it("exposes glyph and cline source bins without changing the workspace identity", async () => {
 		const pkg = JSON.parse(
 			await readFile(join(cliRoot, "package.json"), "utf8"),

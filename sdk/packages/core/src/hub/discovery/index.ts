@@ -20,6 +20,7 @@ const HUB_BUILD_EPOCH_ENV = "CLINE_HUB_BUILD_EPOCH_MS";
 const HUB_STARTUP_LOCK_MAX_AGE_MS = 30_000;
 const HUB_STARTUP_LOCK_WAIT_MS = 15_000;
 const HUB_STARTUP_LOCK_POLL_MS = 100;
+const HUB_PROBE_TIMEOUT_MS = 2_000;
 
 export interface HubServerDiscoveryRecord {
 	hubId: string;
@@ -553,7 +554,14 @@ export async function probeHubServer(
 				headers: options?.authToken
 					? { authorization: `Bearer ${options.authToken}` }
 					: undefined,
-				signal: options?.signal,
+				// A stale listener can accept TCP without ever sending HTTP headers
+				// or completing its body. Bound both phases, even without a caller signal.
+				signal: options?.signal
+					? AbortSignal.any([
+							options.signal,
+							AbortSignal.timeout(HUB_PROBE_TIMEOUT_MS),
+						])
+					: AbortSignal.timeout(HUB_PROBE_TIMEOUT_MS),
 			},
 		);
 		if (!response.ok) {

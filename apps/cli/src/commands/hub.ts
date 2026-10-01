@@ -149,6 +149,8 @@ export function createHubCommand(
 					uptime,
 					cliVersion,
 					coreVersion: health?.coreVersion ?? discovery?.coreVersion,
+					buildId: health?.buildId ?? discovery?.buildId,
+					buildEpochMs: health?.buildEpochMs ?? discovery?.buildEpochMs,
 				}),
 			);
 		}),
