@@ -3,7 +3,7 @@
 - [x] Phase 0: Record installation, build, typecheck, lint, and test baseline (pre-existing failures).
 - [x] Phase 1: Register every meaningful fork divergence, including existing uncommitted behavior (233 committed paths).
 - [x] Phases 2-3: Inspect and classify four upstream commits (five logical units).
-- [ ] Phase 4: Verify and commit each applied batch before the next.
+- [x] Phase 4: Verify and commit applied batches (U5 committed externally in mixed user commit; no history rewrite).
 - [ ] Phase 5: Full verification, registry checks, identity audit, smoke run.
 - [ ] Phase 6: Final report.
 
@@ -20,6 +20,12 @@ Batch 1 U1 verified: settings suite 65/65 across 11 files; root types pass; lint
 Batch 1 committed: `1636a377d`.
 Batch 2 U2 verified: 43/43 tests across five llms files (header/wire and Glyph Responses/native reasoning/LiteLLM); SDK build, CLI build, all workspace typechecks pass; lint unchanged 39 warnings/80 infos. Added omission cases for all four affected provider IDs and undefined/empty/whitespace IDs.
 
-Current action: commit batch 2, then U5 desktop prompt drafts.
+Batch 2 committed: `01d23f1f5`.
+Batch 3 U5 verified: focused four files 221/221; desktop typecheck/build pass; full desktop sidecar 1134 passed/16 failures, same five failing files as baseline. Concurrent typechecking caused one additional 20s timeout in unchanged remote routing; serial rerun removes it. Root types pass; lint unchanged 39 warnings/80 infos.
+Batch 3 committed by external concurrent activity as `a7a09f9c8`, together with user helper/workflow/landing-page changes. Do not amend/split/revert that commit.
+
+Final evidence comparison and report written to REPORT.md. Comparable completed suites have no observed new failures. Full CLI suite, clean native install, legacy extension, credentialed/manual registry checks, and externally changed landing-page equivalence are unresolved sign-off gaps. Phase 5 is therefore partial; no full mission-success claim.
+
+Next action for a resumed sync: read REPORT/BASELINE/REGISTRY; obtain compatible native tooling, finish full CLI/clean install and registry manual checks, then evaluate deferred U3/U4. Do not replay already applied U1/U2/U5 or rewrite external mixed commit a7a09f9c8.
 
 Do not run `sync:cline`: it updates `cline_source`, prohibited by this workflow.
