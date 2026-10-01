@@ -8,7 +8,14 @@ import type {
 	GatewayProviderRegistration,
 	GatewayResolvedModel,
 	GatewayResolvedProviderConfig,
+	JsonValue,
+	ModelInfo,
 } from "@cline/shared";
+import {
+	getLiteLLMModelInfo,
+	mergeLiteLLMPricing,
+} from "../catalog/catalog-litellm";
+import { toGatewayModelCapabilities } from "./model-capabilities";
 
 interface ProviderRecord {
 	manifest: GatewayProviderManifest;
@@ -68,7 +75,37 @@ function mergeModels(
 	const merged = new Map<string, GatewayModelDefinition>();
 
 	for (const model of manifest.models) {
-		merged.set(model.id, { ...model });
+		const facts = getLiteLLMModelInfo(model.id, manifest.id);
+		merged.set(
+			model.id,
+			facts
+				? {
+						...model,
+						...(facts.contextWindow !== undefined
+							? { contextWindow: facts.contextWindow }
+							: {}),
+						...(facts.maxInputTokens !== undefined
+							? { maxInputTokens: facts.maxInputTokens }
+							: {}),
+						...(facts.maxTokens !== undefined
+							? { maxOutputTokens: facts.maxTokens }
+							: {}),
+						...(facts.capabilities !== undefined
+							? { capabilities: toGatewayModelCapabilities(facts.capabilities) }
+							: {}),
+						...(facts.modalities !== undefined
+							? { modalities: facts.modalities }
+							: {}),
+						...(facts.reasoningOptions !== undefined
+							? { reasoningOptions: facts.reasoningOptions }
+							: {}),
+						metadata: {
+							...model.metadata,
+							pricing: facts.pricing ?? model.metadata?.pricing,
+						},
+					}
+				: { ...model },
+		);
 	}
 
 	for (const model of config?.models ?? []) {
@@ -257,9 +294,38 @@ export class GatewayRegistry {
 		}
 
 		const modelId = selection.modelId ?? provider.defaultModelId;
-		const model =
+		let model =
 			provider.models.find((entry) => entry.id === modelId) ??
 			createUnregisteredModel(provider, modelId);
+		const facts = getLiteLLMModelInfo(modelId, selection.providerId);
+		if (facts) {
+			const fallback = {
+				contextWindow: facts.contextWindow,
+				maxInputTokens: facts.maxInputTokens,
+				maxOutputTokens: facts.maxTokens,
+				capabilities: toGatewayModelCapabilities(facts.capabilities),
+				modalities: facts.modalities,
+				operation: facts.operation,
+				reasoningOptions: facts.reasoningOptions,
+			};
+			model = {
+				...fallback,
+				...Object.fromEntries(
+					Object.entries(model).filter(([, value]) => value !== undefined),
+				),
+				id: model.id,
+				name: model.name,
+				providerId: model.providerId,
+				metadata: {
+					litellm: facts.metadata?.litellm as JsonValue,
+					...model.metadata,
+					pricing: mergeLiteLLMPricing(
+						facts.pricing,
+						model.metadata?.pricing as ModelInfo["pricing"],
+					),
+				},
+			} as GatewayModelDefinition;
+		}
 
 		return {
 			provider,

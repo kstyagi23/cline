@@ -64,6 +64,13 @@ Owns model/provider runtime concerns:
 
 - provider settings/config resolution
 - model catalogs and manifests
+- LiteLLM model facts and per-million-token pricing, including long-context tiers.
+  Core persists the full upstream JSON in the data directory's
+  `cache/model_prices_and_context_window.json`; CLI agent startup refreshes it
+  once per process before resolving models, and the shared daemon loads its own
+  snapshot. Offline startup retains the last valid catalog. Exact model IDs and
+  provider-qualified/bare aliases resolve without changing inference request IDs
+  or expanding endpoint-owned model inventories; explicit settings remain authoritative.
 - shared gateway-style provider contracts
 - handler creation via an internal gateway registry
 - AI SDK-backed provider execution code

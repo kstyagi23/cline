@@ -919,6 +919,7 @@ export async function runCli(): Promise<void> {
 		component: "main",
 	});
 	coreServer.setSdkLogger(loggerAdapter.core);
+	await coreServer.initializeLiteLLMModelCatalog({ refresh: true });
 
 	const userInstructionService = createUserInstructionConfigService({
 		skills: {

@@ -182,6 +182,7 @@ vi.mock("@cline/core", async () => {
 	return {
 		readGlobalSettings,
 		setSdkLogger: vi.fn(),
+		initializeLiteLLMModelCatalog: vi.fn(async () => {}),
 		resolveProviderConfig: llmMocks.resolveProviderConfig,
 		createUserInstructionConfigService: vi.fn(() => ({
 			start: vi.fn(async () => {}),
@@ -828,6 +829,10 @@ describe("runCli lightweight command dispatch", () => {
 
 		await expect(runCli()).resolves.toBeUndefined();
 		expect(runtimeMocks.runInteractive).toHaveBeenCalledTimes(1);
+		const core = await import("@cline/core");
+		expect(core.initializeLiteLLMModelCatalog).toHaveBeenCalledWith({
+			refresh: true,
+		});
 		expect(runtimeMocks.runInteractive).toHaveBeenCalledWith(
 			expect.any(Object),
 			expect.anything(),

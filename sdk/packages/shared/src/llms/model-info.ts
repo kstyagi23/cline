@@ -50,6 +50,17 @@ export const ModelPricingSchema = z.object({
 	output: z.number().optional(),
 	cacheWrite: z.number().optional(),
 	cacheRead: z.number().optional(),
+	tiers: z
+		.array(
+			z.object({
+				aboveInputTokens: z.number().nonnegative(),
+				input: z.number().optional(),
+				output: z.number().optional(),
+				cacheWrite: z.number().optional(),
+				cacheRead: z.number().optional(),
+			}),
+		)
+		.optional(),
 });
 
 export type ModelPricing = z.infer<typeof ModelPricingSchema>;

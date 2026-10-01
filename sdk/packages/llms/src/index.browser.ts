@@ -4,6 +4,12 @@ export {
 	type ProviderLocalCli,
 	resolveProviderLocalCli,
 } from "@cline/shared";
+export {
+	enrichLiteLLMModelInfo,
+	getLiteLLMModelInfo,
+	LITELLM_CATALOG_URL,
+	setLiteLLMModelCatalog,
+} from "./catalog/catalog-litellm";
 export type {
 	GetModelsForProviderOptions,
 	ModelCollection,

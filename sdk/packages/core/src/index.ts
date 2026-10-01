@@ -607,6 +607,7 @@ export {
 	toggleDisabledTool,
 	writeGlobalSettings,
 } from "./services/global-settings";
+export { initializeLiteLLMModelCatalog } from "./services/llms/litellm-catalog-cache";
 export type {
 	MarketplaceActionResult,
 	MarketplaceEntryInput,

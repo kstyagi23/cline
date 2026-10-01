@@ -39,6 +39,7 @@ import {
 	shortenPath,
 } from "../utils/tool-parsing";
 import { Spinner } from "./spinner";
+import { ThinkingIndicator } from "./thinking-orb";
 import { ToolOutput } from "./tool-output";
 
 function trimLeading(text: string): string {
@@ -52,20 +53,17 @@ function formatMediaSize(byteLength: number): string {
 	return `${(byteLength / (1024 * 1024)).toFixed(1)} MiB`;
 }
 
-function ReasoningBlock(props: { text: string; streaming: boolean }) {
+function ReasoningBlock(props: {
+	text: string;
+	streaming: boolean;
+	accent: string;
+}) {
 	const [expanded, setExpanded] = useState(false);
 	const { width } = useTerminalDimensions();
 	const content = trimLeading(props.text);
 	if (!content.trim()) {
 		if (props.streaming) {
-			return (
-				<box flexDirection="row" gap={1}>
-					<Spinner name="dots" color="gray" />
-					<text fg="gray">
-						<em>Thinking...</em>
-					</text>
-				</box>
-			);
+			return <ThinkingIndicator color={props.accent} />;
 		}
 		return null;
 	}
@@ -74,12 +72,7 @@ function ReasoningBlock(props: { text: string; streaming: boolean }) {
 		const lines = content.split("\n");
 		return (
 			<box flexDirection="column">
-				<box flexDirection="row" gap={1}>
-					<Spinner name="dots" color="gray" />
-					<text fg="gray">
-						<em>Thinking...</em>
-					</text>
-				</box>
+				<ThinkingIndicator color={props.accent} />
 				<box flexDirection="column" paddingLeft={2}>
 					{lines.map((line) => (
 						<text key={line} fg="gray" selectable>
@@ -693,7 +686,13 @@ export function ChatEntryView(props: {
 			);
 
 		case "reasoning":
-			return <ReasoningBlock text={entry.text} streaming={entry.streaming} />;
+			return (
+				<ReasoningBlock
+					text={entry.text}
+					streaming={entry.streaming}
+					accent={accent}
+				/>
+			);
 
 		case "tool_call":
 			return (

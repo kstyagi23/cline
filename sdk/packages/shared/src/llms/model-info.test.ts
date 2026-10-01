@@ -3,11 +3,46 @@ import {
 	isChatCompatibleModel,
 	isTranscriptionModel,
 	ModelInfoSchema,
+	ModelPricingSchema,
 	modelHasCapability,
 	modelSupportsImageInput,
 	modelSupportsToolCalling,
 	supportsChatModalities,
 } from "./model-info";
+
+describe("ModelPricingSchema tiers", () => {
+	it("preserves optional per-million tier rates, including zero prices", () => {
+		const pricing = {
+			input: 2,
+			output: 10,
+			tiers: [
+				{ aboveInputTokens: 0 },
+				{
+					aboveInputTokens: 1000,
+					input: 4,
+					output: 20,
+					cacheWrite: 0,
+					cacheRead: 0,
+				},
+			],
+		};
+		expect(ModelPricingSchema.parse(pricing)).toEqual(pricing);
+		expect(ModelPricingSchema.parse({ input: 2, output: 10 })).toEqual({
+			input: 2,
+			output: 10,
+		});
+	});
+
+	it.each([
+		-1,
+		"1000",
+		undefined,
+	])("rejects invalid tier thresholds: %s", (aboveInputTokens) => {
+		expect(
+			ModelPricingSchema.safeParse({ tiers: [{ aboveInputTokens }] }).success,
+		).toBe(false);
+	});
+});
 
 describe("isTranscriptionModel", () => {
 	it("accepts exact audio-to-text modalities without requiring a name or operation", () => {

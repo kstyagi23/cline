@@ -358,6 +358,178 @@ describe("ai-sdk usage normalization", () => {
 			expect(normalized.totalCost).toBeCloseTo(0.0035, 5);
 		});
 
+		it.each([
+			[999, 2, 10],
+			[1000, 2, 10],
+			[1001, 4, 20],
+			[2000, 4, 20],
+			[2001, 6, 30],
+		])("selects pricing for %i total input tokens", (inputTokens, input, output) => {
+			const normalized = normalizeUsage(
+				{ inputTokens, outputTokens: 100 },
+				undefined,
+				{
+					input: 2,
+					output: 10,
+					tiers: [
+						{ aboveInputTokens: 2000, input: 6, output: 30 },
+						{ aboveInputTokens: 1000, input: 4, output: 20 },
+					],
+				},
+			);
+			expect(normalized.totalCost).toBeCloseTo(
+				(inputTokens * input + 100 * output) / 1_000_000,
+				10,
+			);
+		});
+
+		it.each([
+			"flat",
+			"nested",
+		])("uses total prompt tokens including cache reads and writes for %s usage", (shape) => {
+			const normalized = normalizeUsage(
+				shape === "flat"
+					? {
+							inputTokens: 1200,
+							inputTokenDetails: {
+								cacheReadTokens: 800,
+								cacheWriteTokens: 300,
+							},
+							outputTokens: 100,
+						}
+					: {
+							inputTokens: {
+								total: 1200,
+								noCache: 100,
+								cacheRead: 800,
+								cacheWrite: 300,
+							},
+							outputTokens: { total: 100 },
+						},
+				undefined,
+				{
+					input: 2,
+					output: 10,
+					cacheRead: 1,
+					cacheWrite: 3,
+					tiers: [
+						{
+							aboveInputTokens: 1000,
+							input: 4,
+							output: 20,
+							cacheRead: 2,
+							cacheWrite: 5,
+						},
+						{ aboveInputTokens: 2000, input: 100, output: 100 },
+					],
+				},
+			);
+			expect(normalized.totalCost).toBeCloseTo(0.0055, 10);
+		});
+
+		it("falls back to base prices for fields omitted from the selected tier", () => {
+			const normalized = normalizeUsage(
+				{
+					inputTokens: 1200,
+					outputTokens: 100,
+					cacheReadTokens: 800,
+					cacheWriteTokens: 300,
+				},
+				undefined,
+				{
+					input: 2,
+					output: 10,
+					cacheRead: 1,
+					cacheWrite: 3,
+					tiers: [
+						{ aboveInputTokens: 500, output: 50, cacheRead: 50 },
+						{ aboveInputTokens: 1000, input: 4 },
+					],
+				},
+			);
+			expect(normalized.totalCost).toBeCloseTo(0.0031, 10);
+		});
+
+		it.each([
+			"base",
+			"tier",
+		])("preserves explicit zero cache prices from %s pricing", (source) => {
+			const cachePrices = { cacheRead: 0, cacheWrite: 0 };
+			const normalized = normalizeUsage(
+				{
+					inputTokens: 1200,
+					outputTokens: 100,
+					cacheReadTokens: 800,
+					cacheWriteTokens: 300,
+				},
+				undefined,
+				{
+					input: 2,
+					output: 10,
+					...(source === "base"
+						? cachePrices
+						: { cacheRead: 1, cacheWrite: 3 }),
+					tiers: [
+						{
+							aboveInputTokens: 1000,
+							input: 4,
+							output: 20,
+							...(source === "tier" ? cachePrices : {}),
+						},
+					],
+				},
+			);
+			expect(normalized.totalCost).toBeCloseTo(0.0024, 10);
+		});
+
+		it("preserves zero input, output and cache tier prices", () => {
+			expect(
+				normalizeUsage(
+					{
+						inputTokens: 1200,
+						outputTokens: 100,
+						cacheReadTokens: 800,
+						cacheWriteTokens: 300,
+					},
+					undefined,
+					{
+						input: 2,
+						output: 10,
+						cacheRead: 1,
+						cacheWrite: 3,
+						tiers: [
+							{
+								aboveInputTokens: 1000,
+								input: 0,
+								output: 0,
+								cacheRead: 0,
+								cacheWrite: 0,
+							},
+						],
+					},
+				).totalCost,
+			).toBe(0);
+		});
+
+		it.each([
+			[{ cost: 0.25, market_cost: 0.5 }, undefined, 0.25],
+			[{ cost: 0 }, undefined, 0],
+			[{ market_cost: 0.5 }, undefined, 0.5],
+			[{}, { gateway: { cost: 0.25, marketCost: 0.5 } }, 0.25],
+		])("preserves provider-reported cost precedence over tiers", (raw, metadata, expected) => {
+			expect(
+				normalizeUsage(
+					{ inputTokens: 1200, outputTokens: 100, raw },
+					metadata,
+					{
+						input: 2,
+						output: 10,
+						tiers: [{ aboveInputTokens: 1000, input: 4, output: 20 }],
+					},
+				).totalCost,
+			).toBe(expected);
+		});
+
 		it("bills pricing-fallback cost on the full output count, including reasoning tokens", () => {
 			const pricingInput = { input: 2.5, output: 10 }; // per 1M tokens
 			const normalized = normalizeUsage(
