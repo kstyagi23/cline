@@ -23,7 +23,8 @@ export interface OpenAICodexRequestHeaderContext {
 
 export interface ResolveProviderRequestHeadersInput {
 	providerId: string;
-	sessionId: string;
+	/** Standalone utility requests have no session and omit its header. */
+	sessionId?: string;
 	source?: string;
 	defaultSource: string;
 	client?: ProviderRequestHeaderClientContext;
@@ -77,6 +78,7 @@ function buildClineRequestHeaders(
 	const platform = trimNonEmpty(input.client?.platform) ?? source;
 	const platformVersion =
 		trimNonEmpty(input.client?.platformVersion) ?? clientVersion;
+	const sessionId = trimNonEmpty(input.sessionId);
 	return {
 		...DEFAULT_CLINE_REQUEST_HEADERS,
 		"User-Agent": `Cline/${clientVersion}`,
@@ -86,7 +88,7 @@ function buildClineRequestHeaders(
 		"X-PLATFORM": platform,
 		"X-PLATFORM-VERSION": platformVersion,
 		"X-CORE-VERSION": input.coreVersion,
-		"X-Task-ID": input.sessionId,
+		...(sessionId ? { "X-Task-ID": sessionId } : {}),
 	};
 }
 
@@ -125,9 +127,10 @@ function buildOpenAICodexRequestHeaders(
 	const accountId =
 		trimNonEmpty(input.openAiCodex?.accountId) ??
 		deriveOpenAICodexAccountId(input.openAiCodex?.accessToken);
+	const sessionId = trimNonEmpty(input.sessionId);
 	return {
 		originator: "cline",
-		session_id: input.sessionId,
+		...(sessionId ? { session_id: sessionId } : {}),
 		"User-Agent": `Cline/${trimNonEmpty(input.openAiCodex?.userAgentVersion) ?? "1.0.0"}`,
 		...(accountId ? { "ChatGPT-Account-Id": accountId } : {}),
 	};
@@ -137,8 +140,9 @@ function resolveRequiredProviderHeaders(
 	input: ResolveProviderRequestHeadersInput,
 ): Record<string, string> | undefined {
 	if (input.providerId === "opencode-go") {
+		const sessionId = trimNonEmpty(input.sessionId);
 		return {
-			"x-opencode-session": input.sessionId,
+			...(sessionId ? { "x-opencode-session": sessionId } : {}),
 			"User-Agent": `Cline/${trimNonEmpty(input.client?.version) ?? input.coreVersion}`,
 		};
 	}
