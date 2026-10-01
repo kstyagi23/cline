@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="theme-color" content="#08070d">
+		<meta
+			name="description"
+			content="Glyph is an AI coding agent for your terminal. Explore your codebase, plan changes, write code, and verify results. Built on Cline. Made for your command line."
+		>
+		<title>Glyph | Your terminal. Beyond the ordinary.</title>
+		<link
+			rel="icon"
+			href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2308070d'/%3E%3Cpath d='M12 15h9l22 34h9M12 49h9l22-34h9' stroke='%23f4f3f0' stroke-width='6' fill='none'/%3E%3C/svg%3E"
+		>
+		<link rel="stylesheet" href="styles.css">
+		<script src="script.js" defer></script>
+	</head>
+	<body id="top">
+		<a class="skip-link" href="#main">Skip to content</a>
+		<div class="site-shell">
+			<header class="site-header">
+				<a class="brand" href="#top" aria-label="Glyph home"
+					><svg viewBox="0 0 64 48" aria-hidden="true">
+						<path d="M3 4h14l30 40h14M3 44h14L47 4h14" />
+					</svg><span>glyph<span class="brand-symbol">_</span></span></a
+				>
+				<button
+					class="menu-toggle"
+					type="button"
+					aria-label="Open navigation"
+					aria-expanded="false"
+					aria-controls="navigation"
+				>
+					<span></span><span></span>
+				</button>
+				<nav id="navigation" aria-label="Main navigation">
+					<a href="#capabilities">Capabilities</a
+					><a href="#workflow">The workflow</a
+					><a href="#get-started"
+						>Get started <span aria-hidden="true">↗</span></a
+					>
+				</nav>
+				<a class="header-link" href="https://github.com/kstyagi23/glyph#readme"
+					>Read the docs <span aria-hidden="true">↗</span></a
+				>
+			</header>
+			<main id="main">
+				<section class="hero" aria-labelledby="hero-title">
+					<div class="hero-meta">
+						<span><i class="status-dot"></i> A NEW SIGNAL IN YOUR TERMINAL</span
+						><span>OPEN SOURCE / BUILT ON CLINE</span>
+					</div>
+					<div class="hero-display">
+						<div class="hero-identity">
+							<p class="eyebrow">LESS FRICTION. MORE FORWARD.</p>
+							<h1 id="hero-title">
+								<span class="sr-only"
+									>Glyph. An AI coding agent for your terminal.</span
+								><svg
+									class="glyph-wordmark"
+									viewBox="0 0 920 180"
+									aria-hidden="true"
+								>
+									<path
+										d="M166 25H40Q15 25 15 50v80q0 25 25 25h126V92H94M211 16v139h142M378 16l70 76 70-76M448 92v72M563 164V25h108q25 0 25 25v27q0 25-25 25H563M746 16v148M899 16v148M746 90h153"
+									/>
+								</svg>
+							</h1>
+							<p class="hero-caption">
+								AN AI CODING AGENT FOR YOUR TERMINAL<span
+									class="cross"
+									aria-hidden="true"
+									>+</span
+								>
+							</p>
+						</div>
+						<div class="dot-matrix" aria-hidden="true"></div>
+					</div>
+					<div class="hero-content">
+						<div class="hero-copy">
+							<h2>Your terminal.<br>Beyond the ordinary.</h2>
+							<p>
+								From the first question to the final diff.<br>An agent that
+								reads your code, thinks it through,<br class="desktop-break">
+								and gets to work. Right where you do.
+							</p>
+							<div class="hero-actions">
+								<a class="button button-light" href="#get-started"
+									>Get started <span aria-hidden="true">↗</span></a
+								><a class="text-link" href="#workflow"
+									>See it in action <span aria-hidden="true">↓</span></a
+								>
+							</div>
+							<span class="platform-note"
+								>WINDOWS / MACOS / LINUX &nbsp; · &nbsp; YOUR MODEL. YOUR CALL.</span
+							>
+						</div>
+						<section
+							class="terminal"
+							aria-label="Illustrative Glyph terminal demo"
+						>
+							<div class="terminal-title">
+								<div class="window-dots" aria-hidden="true">
+									<i></i><i></i><i></i>
+								</div>
+								<span>glyph &nbsp; ~/your-next-big-thing</span
+								><span class="terminal-badge">DEMO</span>
+							</div>
+							<div
+								class="demo-tabs"
+								role="tablist"
+								aria-label="Example workflows"
+							>
+								<button
+									id="demo-build"
+									role="tab"
+									type="button"
+									aria-selected="true"
+									aria-controls="terminal-panel"
+									data-demo="build"
+								>
+									01 BUILD
+								</button><button
+									id="demo-review"
+									role="tab"
+									type="button"
+									aria-selected="false"
+									aria-controls="terminal-panel"
+									tabindex="-1"
+									data-demo="review"
+								>
+									02 REVIEW
+								</button><button
+									id="demo-plan"
+									role="tab"
+									type="button"
+									aria-selected="false"
+									aria-controls="terminal-panel"
+									tabindex="-1"
+									data-demo="plan"
+								>
+									03 PLAN
+								</button>
+							</div>
+							<div
+								id="terminal-panel"
+								class="terminal-body"
+								role="tabpanel"
+								aria-labelledby="demo-build"
+							>
+								<p class="terminal-command">
+									<span class="prompt">❯</span>
+									<span id="demo-command"
+										>glyph "Add dark mode and test it"</span
+									>
+								</p>
+								<p class="agent-heading">
+									<span class="agent-mark" aria-hidden="true">✳</span>
+									GLYPH <span>ACT</span>
+								</p>
+								<p id="demo-intro" class="terminal-intro">
+									I'll check the theme setup, make the change,<br>and run the
+									relevant tests.
+								</p>
+								<div id="demo-steps" class="terminal-steps">
+									<p><span>✓</span> Read &nbsp; src/styles/theme.ts</p>
+									<p>
+										<span>✓</span>
+										Edit &nbsp; Theme toggle + saved preference
+									</p>
+									<p><span>✓</span> Run &nbsp;&nbsp; Theme tests</p>
+								</div>
+								<p id="demo-result" class="terminal-result">
+									Dark mode added. 8 tests passed.
+								</p>
+								<div class="terminal-input">
+									<span aria-hidden="true">❯</span>
+									What do we build next?<span
+										class="cursor"
+										aria-hidden="true"
+									></span>
+								</div>
+							</div>
+							<div class="terminal-footer">
+								<span><i class="status-dot"></i> ILLUSTRATIVE SESSION</span
+								><span>PLAN <kbd>tab</kbd> ACT</span>
+							</div>
+						</section>
+					</div>
+					<div class="hero-bottom">
+						<span>NO NEW WORKSPACE. NO CONTEXT SWITCH.</span
+						><a href="#capabilities"
+							>EXPLORE THE POSSIBILITIES <span aria-hidden="true">↓</span></a
+						>
+					</div>
+				</section>
+				<div class="principles-strip">
+					<span>READ. THINK. BUILD. VERIFY.</span
+					><span>STAY IN YOUR ELEMENT. <span aria-hidden="true">↘</span></span>
+				</div>
+				<section
+					id="capabilities"
+					class="section capabilities"
+					aria-labelledby="capabilities-title"
+				>
+					<div class="section-heading">
+						<div>
+							<p class="eyebrow">01 / BUILT TO GO DEEPER</p>
+							<h2 id="capabilities-title">
+								Not autocomplete.<br>A collaborator.
+							</h2>
+						</div>
+						<p>
+							A full agent workflow, in your command line.<br>Less hand-holding.
+							More moving things forward.
+						</p>
+					</div>
+					<div class="capability-grid">
+						<article class="capability">
+							<div class="feature-top">
+								<span>01</span><span aria-hidden="true">⌘</span>
+							</div>
+							<h3>Context is everything.</h3>
+							<p>
+								Read and search your codebase. Bring project rules, skills,
+								plugins, and MCP tools into the conversation.
+							</p>
+							<span class="feature-tag">PROJECT-AWARE / EXTENSIBLE</span>
+						</article>
+						<article class="capability">
+							<div class="feature-top">
+								<span>02</span><span aria-hidden="true">↗</span>
+							</div>
+							<h3>Think. Then do.</h3>
+							<p>
+								Explore an approach in Plan mode. Switch to Act to edit files,
+								run commands, and verify the result.
+							</p>
+							<span class="feature-tag">PLAN / ACT / VERIFY</span>
+						</article>
+						<article class="capability">
+							<div class="feature-top">
+								<span>03</span><span aria-hidden="true">⊞</span>
+							</div>
+							<h3>More than one thread.</h3>
+							<p>
+								Delegate to subagents and teams. Work in separate Git worktrees
+								or send a task to the background hub.
+							</p>
+							<span class="feature-tag">PARALLEL / BACKGROUND WORK</span>
+						</article>
+					</div>
+					<div class="detail-row">
+						<span>Continue where you left off.</span>
+						<p>
+							Resume sessions. Fork conversations. Compact context. Restore
+							workspace checkpoints.
+						</p>
+						<span aria-hidden="true">↗</span>
+					</div>
+				</section>
+				<section
+					id="workflow"
+					class="section workflow"
+					aria-labelledby="workflow-title"
+				>
+					<div class="section-heading">
+						<div>
+							<p class="eyebrow">02 / ONE AGENT. YOUR WAY OF WORKING.</p>
+							<h2 id="workflow-title">
+								The command line.<br>Without the limitations.
+							</h2>
+						</div>
+						<p>
+							Stay interactive. Run a focused task.<br>Or put Glyph in the
+							pipeline.
+						</p>
+					</div>
+					<div class="workflow-list">
+						<article>
+							<span class="workflow-index">/01</span>
+							<div>
+								<h3>A conversation that keeps up.</h3>
+								<p>
+									Streaming responses, highlighted diffs, file mentions, and a
+									command palette. Switch models and reasoning effort without
+									losing your conversation.
+								</p>
+							</div>
+							<code>glyph -i "Plan a refactor"</code>
+						</article>
+						<article>
+							<span class="workflow-index">/02</span>
+							<div>
+								<h3>One prompt. A focused job.</h3>
+								<p>
+									Give Glyph a task and let it work through the code. Require
+									tool approval when you want to review its actions.
+								</p>
+							</div>
+							<code
+								>glyph --auto-approve false "Run the tests and fix failures"</code
+							>
+						</article>
+						<article>
+							<span class="workflow-index">/03</span>
+							<div>
+								<h3>Part of your bigger picture.</h3>
+								<p>
+									Pipe in a diff, stream newline-delimited JSON, or connect
+									messaging threads to agent sessions.
+								</p>
+							</div>
+							<code>git diff | glyph "Review for bugs"</code>
+						</article>
+					</div>
+				</section>
+				<section class="provider-section" aria-labelledby="provider-title">
+					<div>
+						<p class="eyebrow">NO ONE-SIZE-FITS-ALL INTELLIGENCE</p>
+						<h2 id="provider-title">Your model.<br>Your call.</h2>
+					</div>
+					<div class="provider-copy">
+						<p>
+							Use supported sign-in flows, bring API credentials, or configure a
+							local or OpenAI-compatible endpoint. Tune reasoning effort where
+							your model supports it.
+						</p>
+						<div class="provider-list">
+							<span>Anthropic</span><span>OpenAI</span><span>Gemini</span
+							><span>OpenRouter</span><span>Local endpoints</span
+							><span>+ more</span>
+						</div>
+						<span class="provider-note"
+							>A VALID PROVIDER CREDENTIAL OR ACCESSIBLE LOCAL ENDPOINT IS
+							REQUIRED.</span
+						>
+					</div>
+				</section>
+				<section
+					id="get-started"
+					class="section getting-started"
+					aria-labelledby="start-title"
+				>
+					<div class="section-heading">
+						<div>
+							<p class="eyebrow">03 / YOUR NEXT MOVE</p>
+							<h2 id="start-title">Good things start<br>with a command.</h2>
+						</div>
+						<p>
+							Open source. Built for your terminal.<br>Make this checkout your
+							own.
+						</p>
+					</div>
+					<div class="install-layout">
+						<div class="install-box">
+							<div
+								class="install-tabs"
+								role="tablist"
+								aria-label="Installation method"
+							>
+								<button
+									id="install-source"
+									role="tab"
+									aria-selected="true"
+									aria-controls="install-panel"
+									type="button"
+									data-install="source"
+								>
+									From source
+								</button><button
+									id="install-windows"
+									role="tab"
+									aria-selected="false"
+									aria-controls="install-panel"
+									tabindex="-1"
+									type="button"
+									data-install="windows"
+								>
+									Windows
+								</button><button
+									id="install-native"
+									role="tab"
+									aria-selected="false"
+									aria-controls="install-panel"
+									tabindex="-1"
+									type="button"
+									data-install="native"
+								>
+									Native build
+								</button>
+							</div>
+							<div
+								id="install-panel"
+								role="tabpanel"
+								aria-labelledby="install-source"
+							>
+								<div class="install-context">
+									<span id="install-label">FROM THE ROOT OF THIS CHECKOUT</span
+									><button
+										id="copy-command"
+										type="button"
+										aria-label="Copy installation commands"
+									>
+										COPY <span aria-hidden="true">⧉</span>
+									</button>
+								</div>
+								<pre><code id="install-command">bun install
+bun run build:sdk
+bun run cli</code></pre>
+								<p id="install-note">
+									Requires Bun 1.4.2 and Node.js 22+. Build the shared runtime
+									before launching the CLI.
+								</p>
+							</div>
+						</div>
+						<div class="next-steps">
+							<span class="eyebrow">THEN, MAKE THE CONNECTION.</span>
+							<h3>Bring your intelligence.</h3>
+							<p>
+								After setup, run <code>bun link</code> from
+								<code>apps/cli</code>
+								to put <code>glyph</code> on your PATH. Configure your provider,
+								then start a session.
+							</p>
+							<div class="auth-command">
+								<code>glyph auth</code><span aria-hidden="true">↗</span>
+							</div>
+							<p class="small-note">
+								Without linking, use <code>bun run cli</code> from the
+								repository root.
+							</p>
+						</div>
+					</div>
+					<p class="distribution-note">
+						<span aria-hidden="true">↳</span>
+						Glyph is distributed from this fork, not a Glyph registry package.
+						Installing upstream Cline does not install Glyph. Rebuild this fork
+						rather than using <code>glyph update</code>.
+					</p>
+					<details class="approval-note">
+						<summary>
+							A note on approvals and isolation
+							<span aria-hidden="true">+</span>
+						</summary>
+						<p>
+							Glyph starts in Act mode with tool auto-approval enabled unless
+							settings or flags override it. Use
+							<code>--auto-approve false</code>
+							to review tool actions. Worktrees start from committed HEAD, not
+							uncommitted changes. An isolated <code>--data-dir</code> separates
+							application state; it is not a filesystem security sandbox.
+						</p>
+					</details>
+				</section>
+				<section class="closing" aria-labelledby="closing-title">
+					<p class="eyebrow">SAME TERMINAL. NEW POSSIBILITIES.</p>
+					<h2 id="closing-title">
+						Your next idea.<br><span>One prompt away.</span>
+					</h2>
+					<a class="button button-light" href="#get-started"
+						>Let's build something <span aria-hidden="true">↗</span></a
+					>
+					<div class="closing-grid" aria-hidden="true"></div>
+				</section>
+			</main>
+			<footer class="site-footer">
+				<div class="footer-top">
+					<a class="brand" href="#top"
+						><svg viewBox="0 0 64 48" aria-hidden="true">
+							<path d="M3 4h14l30 40h14M3 44h14L47 4h14" />
+						</svg><span>glyph_</span></a
+					>
+					<p>
+						A terminal-focused fork of
+						<a href="https://github.com/cline/cline"
+							>Cline <span aria-hidden="true">↗</span></a
+						>.<br>Built on the work of Cline and its contributors.
+					</p>
+					<div class="footer-links">
+						<a href="https://github.com/kstyagi23/glyph#readme"
+							>Documentation ↗</a
+						><a href="https://github.com/kstyagi23/glyph">GitHub ↗</a
+						><a href="https://github.com/kstyagi23/glyph/blob/HEAD/LICENSE"
+							>Apache 2.0 ↗</a
+						><a href="#top">Back to top ↑</a>
+					</div>
+				</div>
+				<div class="footer-bottom">
+					<span>INDEPENDENT DIRECTION. OPEN-SOURCE FOUNDATION.</span
+					><span>ORIGINAL CLINE COPYRIGHT & LICENSE NOTICES RETAINED.</span>
+				</div>
+			</footer>
+		</div>
+		<div id="copy-status" class="toast" role="status" aria-live="polite"></div>
+	</body>
+</html>

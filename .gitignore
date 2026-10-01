@@ -36,6 +36,7 @@ coverage-unit
 .github/act/.secrets
 
 .worktrees
+/cline_source/
 
 ## Generated files ##
 apps/vscode/src/generated/
