@@ -15,6 +15,8 @@
 
 U3/U4 / E: Deferred before source editing because legacy extension proto generation/typecheck/build cannot run successfully with available Windows ARM formatter; retain explicit reasons in CHANGES/DECISIONS.
 
-Current action: batch 1 U1, after committing registry/classification docs.
+Batch 1 U1 verified: settings suite 65/65 across 11 files; root types pass; lint unchanged 39 warnings/80 infos; SDK, CLI/hub webview and desktop production builds pass separately. Clean root build exposes pre-existing grpc-tools Windows ARM download 404; dependencies restored with frozen install ignoring lifecycle scripts. No source/dependency fix for this environment failure.
+
+Current action: commit batch 1, then U2.
 
 Do not run `sync:cline`: it updates `cline_source`, prohibited by this workflow.
