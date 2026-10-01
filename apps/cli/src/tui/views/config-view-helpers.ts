@@ -1,3 +1,4 @@
+import { APP_NAME } from "../../branding";
 import type {
 	InteractiveConfigData,
 	InteractiveConfigItem,
@@ -142,7 +143,7 @@ export function getConfigPluginSections(
 		...(clinePlugins.length > 0
 			? [
 					{
-						label: `Cline Plugins (${clinePlugins.length})`,
+						label: `${APP_NAME} Plugins (${clinePlugins.length})`,
 						items: clinePlugins,
 					},
 				]

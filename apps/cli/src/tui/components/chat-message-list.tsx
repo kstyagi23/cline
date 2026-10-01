@@ -12,7 +12,7 @@ import { useTheme } from "../hooks/use-theme";
 import { getThemeModeAccent } from "../themes";
 import type { ChatEntry } from "../types";
 import { ChatEntryView } from "./chat-entry";
-import { Spinner } from "./spinner";
+import { ThinkingIndicator } from "./thinking-orb";
 
 export interface TranscriptScrollHandle {
 	runTranscriptCommand: (command: TranscriptCommand) => void;
@@ -113,10 +113,10 @@ export const ChatMessageList = forwardRef<
 					);
 				})}
 				{props.isStreaming && (
-					<box flexDirection="row" gap={1}>
-						<Spinner name="dots" color={accent} />
-						<text fg="gray">Thinking... (esc to cancel)</text>
-					</box>
+					<ThinkingIndicator
+						color={accent}
+						label="Thinking... (esc to cancel)"
+					/>
 				)}
 			</box>
 		</scrollbox>

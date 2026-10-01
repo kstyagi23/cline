@@ -36,12 +36,14 @@ export async function requestCapability(
 					durationMs: Math.round(performance.now() - startedAt),
 				});
 				if (!result.ok) {
-					reject(
-						new Error(
-							result.error ||
-								`Capability ${capabilityName} was rejected by ${targetClientId}.`,
-						),
+					const error = new Error(
+						result.error ||
+							`Capability ${capabilityName} was rejected by ${targetClientId}.`,
 					);
+					if (result.cancelled) {
+						error.name = "AbortError";
+					}
+					reject(error);
 					return;
 				}
 				resolve(result.payload);
@@ -135,7 +137,7 @@ export function cancelPendingCapabilityRequests(
 			targetClientId: pending.targetClientId,
 			reason,
 		});
-		pending.resolve({ ok: false, error: reason });
+		pending.resolve({ ok: false, cancelled: true, error: reason });
 		ctx.publish(
 			ctx.buildEvent(
 				"capability.resolved",

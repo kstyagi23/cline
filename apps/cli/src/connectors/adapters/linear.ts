@@ -6,6 +6,7 @@ import {
 import type { ConnectLinearOptions, LinearConnectorState } from "@cline/shared";
 import { type Adapter, Chat, ConsoleLogger, type Thread } from "chat";
 import type { Command } from "commander";
+import { CLI_COMMAND } from "../../branding";
 import type { CliLoggerAdapter } from "../../logging/adapter";
 import { createCliLoggerAdapter } from "../../logging/adapter";
 import {
@@ -531,8 +532,7 @@ class LinearConnector extends ConnectorBase<
 				`[linear] connector already running pid=${state.pid} rpc=${state.rpcAddress} url=${state.baseUrl}`,
 			formatBackgroundStartMessage: (pid) =>
 				`[linear] starting background connector pid=${pid} user=${options.userName}`,
-			foregroundHint:
-				"[linear] use `cline connect linear -i ...` to run in the foreground",
+			foregroundHint: `[linear] use \`${CLI_COMMAND} connect linear -i ...\` to run in the foreground`,
 			launchFailureMessage: "failed to launch Linear connector in background",
 		});
 		if (backgroundExitCode !== undefined) {

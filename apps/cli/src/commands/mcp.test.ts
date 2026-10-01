@@ -209,7 +209,7 @@ describe("mcp install command", () => {
 		expect(code).toBe(1);
 		expect(runWizard).not.toHaveBeenCalled();
 		expect(writeErr).toHaveBeenCalledWith(
-			"cline mcp install opens the MCP wizard and requires a TTY. Pass --yes to install noninteractively.",
+			"glyph mcp install opens the MCP wizard and requires a TTY. Pass --yes to install noninteractively.",
 		);
 	});
 
@@ -224,7 +224,7 @@ describe("mcp install command", () => {
 
 		expect(code).toBe(1);
 		expect(writeErr).toHaveBeenCalledWith(
-			"cline mcp install opens the MCP wizard and requires a TTY. Pass --yes to install noninteractively.",
+			"glyph mcp install opens the MCP wizard and requires a TTY. Pass --yes to install noninteractively.",
 		);
 	});
 

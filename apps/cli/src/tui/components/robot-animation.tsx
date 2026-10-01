@@ -1,82 +1,36 @@
 import { useTerminalDimensions } from "@opentui/react";
 import { useEffect, useState } from "react";
-import { type CroppedFrame, FRAMES } from "./robot-frames";
-
-const FRAME_STRAIGHT = 0;
-const FRAME_BOTTOM_LEFT = 64;
-const FRAME_BOTTOM_CENTER = 96;
-const FRAME_BOTTOM_RIGHT = 128;
-
-const ROBOT_HEIGHT = 12;
-
-function buildTheme(defaultColor: string): Record<string, string> {
-	return {
-		black: defaultColor,
-		whiteBright: defaultColor,
-		gray: defaultColor,
-	};
-}
-
-function getColor(key: string, theme: Record<string, string>): string {
-	return theme[key] || key;
-}
-
-interface ColorSegment {
-	text: string;
-	fg: string;
-}
-
-function buildRowSegments(
-	row: string,
-	rowIdx: number,
-	colors: Record<string, string>,
-	defaultColor: string,
-	theme: Record<string, string>,
-): ColorSegment[] {
-	const segments: ColorSegment[] = [];
-	let currentFg = defaultColor;
-	let currentText = "";
-
-	for (let col = 0; col < row.length; col++) {
-		const key = `${col},${rowIdx}`;
-		const fg = colors[key] ? getColor(colors[key], theme) : defaultColor;
-		if (fg !== currentFg) {
-			if (currentText) segments.push({ text: currentText, fg: currentFg });
-			currentFg = fg;
-			currentText = row[col];
-		} else {
-			currentText += row[col];
-		}
-	}
-	if (currentText) segments.push({ text: currentText, fg: currentFg });
-	return segments;
-}
+import {
+	type CroppedFrame,
+	FACE_HEIGHT,
+	FACE_WIDTH,
+	FRAME_BOTTOM_CENTER,
+	FRAME_BOTTOM_LEFT,
+	FRAME_BOTTOM_RIGHT,
+	FRAME_STRAIGHT,
+	FRAMES,
+} from "./robot-frames";
 
 function RobotFrame(props: { frame: CroppedFrame; defaultColor: string }) {
 	const { frame, defaultColor } = props;
-	const theme = buildTheme(defaultColor);
 	return (
-		<box flexDirection="column">
-			{frame.rows.map((row, rowIdx) => {
-				const segments = buildRowSegments(
-					row,
-					rowIdx,
-					frame.colors,
-					defaultColor,
-					theme,
-				);
-				return (
-					// biome-ignore lint/suspicious/noArrayIndexKey: static animation frame with fixed row order
-					<text key={`row-${rowIdx}`}>
-						{segments.map((seg, j) => (
-							// biome-ignore lint/suspicious/noArrayIndexKey: static animation frame with fixed row order
-							<span key={`seg-${rowIdx}-${j}`} fg={seg.fg}>
-								{seg.text}
-							</span>
-						))}
-					</text>
-				);
-			})}
+		<box
+			flexDirection="column"
+			width={FACE_WIDTH}
+			height={FACE_HEIGHT}
+			flexShrink={0}
+		>
+			{frame.rows.map((row, rowIdx) => (
+				// biome-ignore lint/suspicious/noArrayIndexKey: animation frames have a fixed row order
+				<text
+					key={`row-${rowIdx}`}
+					fg={defaultColor}
+					height={1}
+					wrapMode="none"
+				>
+					{row}
+				</text>
+			))}
 		</box>
 	);
 }
@@ -91,7 +45,7 @@ export function RobotAnimation(props: {
 	const { width, height } = useTerminalDimensions();
 
 	const faceX = Math.floor(width / 2);
-	const trackStartY = Math.floor(height / 2) - Math.floor(ROBOT_HEIGHT / 2);
+	const trackStartY = Math.floor(height / 2) - Math.floor(FACE_HEIGHT / 2);
 
 	useEffect(() => {
 		const dx = props.cursorX - faceX;

@@ -1,7 +1,7 @@
 import { formatDisplayUserInput } from "@cline/shared";
+import { APP_NAME } from "../../branding";
 import type { AppView, ChatEntry } from "../types";
 
-const APP_TITLE = "Cline";
 const CHAT_TITLE_PREFIX = "> ";
 const MAX_TERMINAL_TITLE_LENGTH = 80;
 // biome-ignore lint/suspicious/noControlCharactersInRegex: stripping control characters from terminal titles is the purpose of this pattern
@@ -33,7 +33,7 @@ export function deriveTerminalTitle(input: {
 	initialPrompt?: string;
 }): string {
 	if (input.appView !== "chat") {
-		return APP_TITLE;
+		return APP_NAME;
 	}
 
 	for (let index = input.entries.length - 1; index >= 0; index -= 1) {
@@ -50,5 +50,5 @@ export function deriveTerminalTitle(input: {
 	const initialPrompt = normalizeChatTitleText(input.initialPrompt ?? "");
 	return initialPrompt
 		? truncateTitle(`${CHAT_TITLE_PREFIX}${initialPrompt}`)
-		: APP_TITLE;
+		: APP_NAME;
 }

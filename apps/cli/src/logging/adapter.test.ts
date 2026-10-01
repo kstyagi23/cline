@@ -60,6 +60,8 @@ describe("createCliLoggerAdapter", () => {
 	});
 
 	it("resolves default runtime config from data dir", () => {
+		// App labels are Glyph, but telemetry/runtime identity and log paths stay compatible.
+		expect(commandName).toBe("cline");
 		const snapshot = withEnvSnapshot();
 		const dataDir = mkdtempSync(join(tmpdir(), `${commandName}-log-test-`));
 		process.env.CLINE_DATA_DIR = dataDir;
@@ -71,7 +73,7 @@ describe("createCliLoggerAdapter", () => {
 		try {
 			const adapter = createCliLoggerAdapter({ runtime: "cli" });
 			expect(adapter.runtimeConfig.destination).toBe(
-				join(dataDir, "logs", `${commandName}.log`),
+				join(dataDir, "logs", "cline.log"),
 			);
 			expect(adapter.runtimeConfig.level).toBe("info");
 			expect(adapter.runtimeConfig.name).toBe(`${commandName}.cli`);

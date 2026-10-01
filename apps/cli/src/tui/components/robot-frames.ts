@@ -1,73 +1,54 @@
-import encodedFrames from "./robot-frames.generated.json";
-
 export interface CroppedFrame {
 	rows: string[];
-	colors: Record<string, string>;
 }
 
-interface EncodedRobotFrames {
-	schema: 1;
-	width: number;
-	height: number;
-	palette: string[];
-	frames: [rows: string[], colorRuns: number[]][];
-}
+// Two square half-cell pixels per terminal row keep the face circular in the
+// usual 1:2 terminal cell aspect ratio, rather than stretching it into an oval.
+export const FACE_WIDTH = 24;
+export const FACE_HEIGHT = 12;
+export const FRAME_STRAIGHT = 0;
+export const FRAME_BOTTOM_LEFT = 64;
+export const FRAME_BOTTOM_CENTER = 96;
+export const FRAME_BOTTOM_RIGHT = 128;
 
-function decodeRunLengthColors(
-	colorRuns: number[],
-	palette: string[],
-	width: number,
-	height: number,
-): Record<string, string> {
-	const colors: Record<string, string> = {};
-	let cellIndex = 0;
+const RADIUS = FACE_WIDTH / 2;
+const CENTER = (FACE_WIDTH - 1) / 2;
+const EYE_SPACING = 4;
+const EYE_RADIUS_X = 1.75;
+const EYE_RADIUS_Y = 3;
 
-	for (let offset = 0; offset < colorRuns.length; offset += 2) {
-		const count = colorRuns[offset];
-		const paletteIndex = colorRuns[offset + 1];
-		if (count === undefined || paletteIndex === undefined) {
-			throw new Error(`Invalid robot frame color run at offset ${offset}`);
+function buildFrame(index: number): CroppedFrame {
+	const gazeX =
+		index <= FRAME_BOTTOM_LEFT
+			? (-2 * index) / FRAME_BOTTOM_LEFT
+			: (2 * (index - FRAME_BOTTOM_CENTER)) /
+				(FRAME_BOTTOM_RIGHT - FRAME_BOTTOM_CENTER);
+	const gazeY = 2 * Math.min(index / FRAME_BOTTOM_LEFT, 1);
+	const eyeY = CENTER - 1.5 + gazeY;
+
+	function isFilled(x: number, y: number): boolean {
+		if ((x - CENTER) ** 2 + (y - CENTER) ** 2 > RADIUS ** 2) {
+			return false;
 		}
-
-		const color = palette[paletteIndex];
-		if (!color) {
-			throw new Error(`Unknown robot frame palette index ${paletteIndex}`);
-		}
-
-		for (let i = 0; i < count; i++) {
-			const x = cellIndex % width;
-			const y = Math.floor(cellIndex / width);
-			colors[`${x},${y}`] = color;
-			cellIndex++;
-		}
+		return ![-EYE_SPACING, EYE_SPACING].some((offset) => {
+			const dx = (x - (CENTER + offset + gazeX)) / EYE_RADIUS_X;
+			const dy = (y - eyeY) / EYE_RADIUS_Y;
+			return dx ** 2 + dy ** 2 <= 1;
+		});
 	}
 
-	const expectedCells = width * height;
-	if (cellIndex !== expectedCells) {
-		throw new Error(
-			`Robot frame decoded to ${cellIndex} cells, expected ${expectedCells}`,
-		);
-	}
-
-	return colors;
+	const rows = Array.from({ length: FACE_HEIGHT }, (_, row) =>
+		Array.from({ length: FACE_WIDTH }, (_, col) => {
+			const top = isFilled(col, row * 2);
+			const bottom = isFilled(col, row * 2 + 1);
+			return top ? (bottom ? "█" : "▀") : bottom ? "▄" : " ";
+		}).join(""),
+	);
+	return { rows };
 }
 
-function decodeRobotFrames(encoded: EncodedRobotFrames): CroppedFrame[] {
-	if (encoded.schema !== 1) {
-		throw new Error(`Unsupported robot frame schema ${encoded.schema}`);
-	}
-
-	return encoded.frames.map(([rows, colorRuns]) => ({
-		rows,
-		colors: decodeRunLengthColors(
-			colorRuns,
-			encoded.palette,
-			encoded.width,
-			encoded.height,
-		),
-	}));
-}
-
-export const FRAMES: CroppedFrame[] = decodeRobotFrames(
-	encodedFrames as EncodedRobotFrames,
+// The silhouette stays fixed and fully closed while the eyes follow the cursor.
+export const FRAMES: CroppedFrame[] = Array.from(
+	{ length: FRAME_BOTTOM_RIGHT + 1 },
+	(_, index) => buildFrame(index),
 );

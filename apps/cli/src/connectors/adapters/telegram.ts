@@ -10,6 +10,7 @@ import type {
 } from "@cline/shared";
 import { Chat, ConsoleLogger, type Thread } from "chat";
 import type { Command } from "commander";
+import { CLI_COMMAND } from "../../branding";
 import type { CliLoggerAdapter } from "../../logging/adapter";
 import { createCliLoggerAdapter } from "../../logging/adapter";
 import {
@@ -508,7 +509,7 @@ class TelegramConnector extends ConnectorBase<
 						"Notes:",
 						"  - Without -i, the connector is launched in the background.",
 						"  - Tools are enabled by default for Telegram sessions.",
-						"  - Use --allowed-user-id or `cline connect` to restrict Telegram access.",
+						`  - Use --allowed-user-id or \`${CLI_COMMAND} connect\` to restrict Telegram access.`,
 						"  - Bot username is discovered from the Telegram bot token when omitted.",
 						"  - Provider/model default to the CLI's last-used provider settings.",
 					].join("\n"),
@@ -757,8 +758,7 @@ class TelegramConnector extends ConnectorBase<
 				`[telegram] connector already running pid=${state.pid} rpc=${state.rpcAddress}`,
 			formatBackgroundStartMessage: (pid) =>
 				`[telegram] starting background connector pid=${pid} bot=@${options.botUsername}`,
-			foregroundHint:
-				"[telegram] use `cline connect telegram -i ...` to run in the foreground",
+			foregroundHint: `[telegram] use \`${CLI_COMMAND} connect telegram -i ...\` to run in the foreground`,
 			launchFailureMessage: "failed to launch Telegram connector in background",
 		});
 		if (backgroundExitCode !== undefined) {

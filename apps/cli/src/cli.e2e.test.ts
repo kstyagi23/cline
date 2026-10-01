@@ -763,7 +763,7 @@ Break work into clear steps.`,
 
 		expect(result.status).toBe(1);
 		expect(asText(result.stderr)).toContain(
-			"cline mcp install opens the MCP wizard and requires a TTY.",
+			"glyph mcp install opens the MCP wizard and requires a TTY.",
 		);
 	});
 

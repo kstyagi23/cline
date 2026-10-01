@@ -94,7 +94,7 @@ describe("createCliCore", () => {
 			expect.objectContaining({
 				hub: expect.objectContaining({
 					clientType: "cli",
-					displayName: "Cline CLI",
+					displayName: "Glyph CLI",
 				}),
 			}),
 		);
@@ -107,7 +107,7 @@ describe("createCliCore", () => {
 			expect.objectContaining({
 				hub: expect.objectContaining({
 					clientType: "cli",
-					displayName: "Cline CLI",
+					displayName: "Glyph CLI",
 				}),
 			}),
 		);
@@ -174,7 +174,7 @@ describe("createCliCore", () => {
 				backendMode: "hub",
 				hub: expect.objectContaining({
 					clientType: "cli",
-					displayName: "Cline CLI",
+					displayName: "Glyph CLI",
 				}),
 			}),
 		);
@@ -213,7 +213,7 @@ describe("createCliCore", () => {
 				}),
 				hub: expect.objectContaining({
 					clientType: "cli",
-					displayName: "Cline CLI",
+					displayName: "Glyph CLI",
 				}),
 			}),
 		);

@@ -1,4 +1,5 @@
 import { isChatCompatibleModel } from "@cline/shared";
+import { enrichLiteLLMModelInfo } from "../catalog/catalog-litellm";
 import type {
 	ModelCollection,
 	ModelInfo,
@@ -75,7 +76,16 @@ export async function getModelsForProvider(
 	options: GetModelsForProviderOptions = {},
 ): Promise<Record<string, ModelInfo>> {
 	const collection = getProviderFromCache(providerId);
-	const builtInModels = collection?.models ?? {};
+	const builtInModels = Object.fromEntries(
+		Object.entries(collection?.models ?? {}).map(([id, model]) => [
+			id,
+			enrichLiteLLMModelInfo(
+				model,
+				providerId,
+				!CUSTOM_PROVIDERS.has(providerId),
+			),
+		]),
+	);
 	const customModels = CUSTOM_MODELS.get(providerId);
 	const models = customModels
 		? { ...builtInModels, ...Object.fromEntries(customModels) }

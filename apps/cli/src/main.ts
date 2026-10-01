@@ -5,6 +5,7 @@ import type { ToolPolicy } from "@cline/core";
 
 import { registerDisposable } from "@cline/shared";
 import type { Command } from "commander";
+import { APP_NAME, CLI_COMMAND } from "./branding";
 import { registerHistoryCommand } from "./commands/history-command";
 import {
 	CommanderError,
@@ -133,7 +134,7 @@ function promptArgLooksQuoted(arg: string | undefined): boolean {
 function writePromptArgError(args: string[]): void {
 	const renderedArgs = args.join(" ");
 	writeErr(
-		`Unknown command or unquoted prompt: ${renderedArgs}\nPrompt text must be passed as a single quoted argument, for example: cline "fix the tests". Use "cline --help" to see available commands and flags.`,
+		`Unknown command or unquoted prompt: ${renderedArgs}\nPrompt text must be passed as a single quoted argument, for example: ${CLI_COMMAND} "fix the tests". Use "${CLI_COMMAND} --help" to see available commands and flags.`,
 	);
 }
 
@@ -282,7 +283,7 @@ export async function runCli(): Promise<void> {
 
 	const pluginCmd = program
 		.command("plugin")
-		.description("Manage Cline Plugins")
+		.description(`Manage ${APP_NAME} Plugins`)
 		.action(() => {
 			pluginCmd.help();
 		});
@@ -290,7 +291,7 @@ export async function runCli(): Promise<void> {
 		.command("install")
 		.alias("i")
 		.description(
-			"Install a Cline Plugin from an official keyword, npm, git, URL, or a local path",
+			`Install a ${APP_NAME} Plugin from an official keyword, npm, git, URL, or a local path`,
 		)
 		.argument(
 			"<source>",
@@ -332,7 +333,7 @@ export async function runCli(): Promise<void> {
 		.command("uninstall")
 		.alias("remove")
 		.alias("rm")
-		.description("Uninstall a Cline Plugin by name or path")
+		.description(`Uninstall a ${APP_NAME} Plugin by name or path`)
 		.argument("<name>", "plugin package name, installed slug, or plugin path")
 		.option("--json", "Output as JSON")
 		.option(
@@ -354,18 +355,20 @@ export async function runCli(): Promise<void> {
 		});
 	const skillCmd = program
 		.command("skill")
-		.description("Manage Cline Skills via the open skills CLI (npx skills)")
+		.description(
+			`Manage ${APP_NAME} Skills via the open skills CLI (npx skills)`,
+		)
 		.allowUnknownOption()
 		.passThroughOptions()
 		.argument("[args...]", "arguments forwarded to the skills CLI")
 		.addHelpText(
 			"after",
 			"\nForwards to the open skills CLI via npx. Examples:\n" +
-				"  cline skill add <owner/repo>       Add a skill into Cline\n" +
-				"  cline skill install <owner/repo>   Alias for add\n" +
-				"  cline skill list                   List installed skills\n" +
-				"  cline skill remove                 Remove installed skills\n" +
-				"  cline skill uninstall              Alias for remove\n" +
+				`  ${CLI_COMMAND} skill add <owner/repo>       Add a skill into ${APP_NAME}\n` +
+				`  ${CLI_COMMAND} skill install <owner/repo>   Alias for add\n` +
+				`  ${CLI_COMMAND} skill list                   List installed skills\n` +
+				`  ${CLI_COMMAND} skill remove                 Remove installed skills\n` +
+				`  ${CLI_COMMAND} skill uninstall              Alias for remove\n` +
 				"\nadd/install and remove/uninstall default to '--agent cline' unless you pass your own --agent.\n" +
 				"Run 'npx skills --help' for the full command reference.",
 		)
@@ -377,7 +380,7 @@ export async function runCli(): Promise<void> {
 	const connectCmd = program
 		.command("connect")
 		.description("Connect to an external channel")
-		.argument("[channel]", "Channel to connect Cline CLI to")
+		.argument("[channel]", `Channel to connect ${APP_NAME} CLI to`)
 		.option("--stop", "Kill all current channel connections")
 		.option("--restart", "Restart a channel connection")
 		.option(
@@ -469,7 +472,7 @@ export async function runCli(): Promise<void> {
 				ctx.exitCode = await runMcpWizard();
 			} else {
 				writeln(
-					"MCP wizard requires a TTY. Use cline config mcp to list servers.",
+					`MCP wizard requires a TTY. Use ${CLI_COMMAND} config mcp to list servers.`,
 				);
 			}
 		});
@@ -664,7 +667,7 @@ export async function runCli(): Promise<void> {
 
 	program
 		.command("version")
-		.description("Show Cline CLI version number")
+		.description(`Show ${APP_NAME} CLI version number`)
 		.action(async () => {
 			const { showVersion } = await import("./commands/help");
 			showVersion();
@@ -916,6 +919,7 @@ export async function runCli(): Promise<void> {
 		component: "main",
 	});
 	coreServer.setSdkLogger(loggerAdapter.core);
+	await coreServer.initializeLiteLLMModelCatalog({ refresh: true });
 
 	const userInstructionService = createUserInstructionConfigService({
 		skills: {

@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-// Publishes cline and all platform-specific binary packages to npm.
+// Publishes Glyph CLI under the existing cline and @cline/cli-* package names.
 //
 // Usage:
 //   bun script/publish-npm.ts                 # publish with "latest" tag
@@ -11,7 +11,15 @@
 //   - Run script/build.ts first to generate dist/ packages
 //   - GitHub trusted publishing or `npm login` for authentication
 
-import { existsSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import {
+	copyFileSync,
+	cpSync,
+	existsSync,
+	mkdirSync,
+	readdirSync,
+	readFileSync,
+	rmSync,
+} from "node:fs";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
 import { $ } from "bun";
@@ -261,15 +269,18 @@ await Promise.all(platformTasks);
 console.log("\nPreparing main package...");
 const mainPkgDir = join(cliDir, "dist", "cli");
 
-await $`rm -rf ${mainPkgDir}`;
-await $`mkdir -p ${mainPkgDir}`;
-await $`cp -r ${join(cliDir, "bin")} ${join(mainPkgDir, "bin")}`;
-await $`cp ${join(cliDir, "script/postinstall.mjs")} ${join(mainPkgDir, "postinstall.mjs")}`;
+rmSync(mainPkgDir, { recursive: true, force: true });
+mkdirSync(mainPkgDir, { recursive: true });
+cpSync(join(cliDir, "bin"), join(mainPkgDir, "bin"), { recursive: true });
+copyFileSync(
+	join(cliDir, "script/postinstall.mjs"),
+	join(mainPkgDir, "postinstall.mjs"),
+);
 
 // Copy LICENSE from repo root if it exists
 const licenseFrom = join(cliDir, "../../LICENSE");
 if (existsSync(licenseFrom)) {
-	await $`cp ${licenseFrom} ${join(mainPkgDir, "LICENSE")}`;
+	copyFileSync(licenseFrom, join(mainPkgDir, "LICENSE"));
 }
 
 // Copy README.md so the npm registry listing has the same landing page
@@ -278,7 +289,7 @@ if (existsSync(licenseFrom)) {
 // automatically.
 const readmeFrom = join(cliDir, "README.md");
 if (existsSync(readmeFrom)) {
-	await $`cp ${readmeFrom} ${join(mainPkgDir, "README.md")}`;
+	copyFileSync(readmeFrom, join(mainPkgDir, "README.md"));
 } else {
 	console.error(
 		`Missing ${readmeFrom}. The CLI README must exist before publishing.`,
@@ -311,8 +322,9 @@ const homepage =
 const bugs = "bugs" in mainPkgRecord ? mainPkgRecord.bugs : undefined;
 const wrapperPackageJson = {
 	name: wrapperPackageName,
+	displayName: "Glyph",
 	version,
-	description: description || "Cline CLI",
+	description: description || "Glyph CLI",
 	license: license || "Apache-2.0",
 	...(keywords ? { keywords } : {}),
 	...(author ? { author } : {}),
@@ -320,6 +332,7 @@ const wrapperPackageJson = {
 	...(bugs ? { bugs } : {}),
 	...(sourceRepository ? { repository: sourceRepository } : {}),
 	bin: {
+		glyph: "./bin/cline",
 		cline: "./bin/cline",
 	},
 	scripts: {
@@ -352,5 +365,5 @@ if (dryRun) {
 	);
 
 	console.log("\nInstall with:");
-	console.log(`  npm install -g ${wrapperPackageName}`);
+	console.log(`  bun add --global ${wrapperPackageName}`);
 }

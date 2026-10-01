@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { getComponentCatalogue } from "@opentui/react";
 import { testRender } from "@opentui/react/test-utils";
-import { act } from "react";
+import { act, useState } from "react";
 
 const isolatedRoot = mkdtempSync(join(tmpdir(), "cline-tui-smoke-"));
 process.env.CLINE_DIR = join(isolatedRoot, ".cline");
@@ -55,6 +55,164 @@ try {
 			});
 		}
 		console.log(`  Passed: ${name} renders its loading spinner`);
+	}
+
+	const { TrackedRobot } = await import("../src/tui/components/tracked-robot");
+	const { FACE_HEIGHT, FRAMES } = await import(
+		"../src/tui/components/robot-frames"
+	);
+	const { TerminalColorsContext } = await import("../src/tui/hooks/use-theme");
+	const { ChatMessageList } = await import(
+		"../src/tui/components/chat-message-list"
+	);
+	for (const width of [80, 30]) {
+		let startReasoning = () => {};
+		let stopThinking = () => {};
+		function ThinkingHarness() {
+			const [phase, setPhase] = useState(0);
+			startReasoning = () => setPhase(1);
+			stopThinking = () => setPhase(2);
+			return (
+				<TerminalColorsContext
+					value={
+						width === 80
+							? { background: "#000000", foreground: "#ffffff" }
+							: { background: "#ffffff", foreground: "#000000" }
+					}
+				>
+					<ChatMessageList
+						entries={
+							phase === 0
+								? []
+								: [
+										{
+											kind: "reasoning",
+											text: "Checking the code",
+											streaming: phase === 1,
+										},
+									]
+						}
+						isStreaming={phase === 0}
+					/>
+				</TerminalColorsContext>
+			);
+		}
+		const setup = await testRender(<ThinkingHarness />, { width, height: 24 });
+		try {
+			await act(async () => {
+				await setup.renderOnce();
+			});
+			const frame = setup.captureCharFrame();
+			const orbRows = frame
+				.split("\n")
+				.filter((row) => /[\u2801-\u28ff]/.test(row));
+			assert.equal(orbRows.length, width === 80 ? 3 : 1, frame);
+			assert.ok(frame.includes("Thinking..."), frame);
+			const label = frame.replace(/[\u2800-\u28ff]/g, "").replace(/\s+/g, " ");
+			assert.ok(label.includes("(esc to cancel)"), frame);
+			if (process.env.GLYPH_SMOKE_PREVIEW === "1") console.log(frame);
+			await act(async () => {
+				startReasoning();
+			});
+			await act(async () => {
+				await setup.renderOnce();
+			});
+			const reasoning = setup.captureCharFrame();
+			assert.ok(reasoning.includes("Checking the code"), reasoning);
+			assert.match(reasoning, /[\u2801-\u28ff]/);
+			assert.ok(reasoning.includes("Thinking..."), reasoning);
+			await act(async () => {
+				stopThinking();
+			});
+			await act(async () => {
+				await setup.renderOnce();
+			});
+			const stopped = setup.captureCharFrame();
+			assert.ok(!stopped.includes("Thinking..."), stopped);
+			assert.doesNotMatch(stopped, /[\u2801-\u28ff]/);
+		} finally {
+			await act(async () => {
+				setup.renderer.destroy();
+			});
+		}
+		console.log(
+			`  Passed: thinking orb renders and unmounts at ${width} columns`,
+		);
+	}
+	const { OnboardingMainMenuScreen } = await import(
+		"../src/tui/views/onboarding/screens"
+	);
+	const { MAIN_MENU } = await import("../src/tui/views/onboarding/model");
+	const brandCases = [
+		{
+			name: "circular face on a dark terminal",
+			width: 80,
+			height: 24,
+			content: (
+				<TerminalColorsContext
+					value={{ background: "#000000", foreground: "#ffffff" }}
+				>
+					<TrackedRobot />
+				</TerminalColorsContext>
+			),
+		},
+		{
+			name: "circular face on a narrow light terminal",
+			width: 30,
+			height: 24,
+			content: (
+				<TerminalColorsContext
+					value={{ background: "#ffffff", foreground: "#000000" }}
+				>
+					<TrackedRobot />
+				</TerminalColorsContext>
+			),
+		},
+		{
+			name: "Glyph onboarding",
+			width: 80,
+			height: 48,
+			content: (
+				<OnboardingMainMenuScreen
+					contentWidth={60}
+					menuOptions={MAIN_MENU}
+					menuSelected={0}
+					mouse={{ cursor: { x: 0, y: 0 }, onMouseMove: () => {} }}
+				/>
+			),
+		},
+	];
+	for (const { name, width, height, content } of brandCases) {
+		const setup = await testRender(content, { width, height });
+		try {
+			await act(async () => {
+				await setup.renderOnce();
+			});
+			const frame = setup.captureCharFrame();
+			const faceRows = frame.split("\n").filter((row) => /[█▀▄]/.test(row));
+			assert.equal(
+				faceRows.length,
+				FACE_HEIGHT,
+				`${name} clipped the face:\n${frame}`,
+			);
+			assert.deepEqual(
+				faceRows.map((row) => row.trim()),
+				FRAMES[0].rows.map((row) => row.trim()),
+				`${name} did not render the complete circular face`,
+			);
+			if (name === "Glyph onboarding") {
+				assert.ok(frame.includes("Welcome to Glyph"), frame);
+				assert.ok(!frame.includes("Welcome to Cline"), frame);
+				// Provider brands and IDs are not part of the application rebrand.
+				assert.ok(frame.includes("Sign in with Cline"), frame);
+			}
+			if (process.env.GLYPH_SMOKE_PREVIEW === "1") console.log(frame);
+		} finally {
+			await act(async () => {
+				setup.renderer.destroy();
+			});
+		}
+		console.log(`  Passed: ${name} renders the complete Glyph face`);
 	}
 } finally {
 	rmSync(isolatedRoot, { recursive: true, force: true });

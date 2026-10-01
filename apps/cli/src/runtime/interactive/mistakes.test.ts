@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createMistakeLimitDecisionResolver } from "./mistakes";
 
 describe("createMistakeLimitDecisionResolver", () => {
@@ -41,9 +41,10 @@ describe("createMistakeLimitDecisionResolver", () => {
 	});
 
 	it("honors an explicit stop answer", async () => {
+		const askQuestion = vi.fn(async () => "Stop this run");
 		const decide = createMistakeLimitDecisionResolver({
 			autoApproveAllRef: { current: false },
-			askQuestionRef: { current: async () => "Stop this run" },
+			askQuestionRef: { current: askQuestion },
 		});
 
 		await expect(
@@ -56,5 +57,9 @@ describe("createMistakeLimitDecisionResolver", () => {
 		).resolves.toMatchObject({
 			action: "stop",
 		});
+		expect(askQuestion).toHaveBeenCalledWith(
+			expect.stringContaining("How should Glyph continue?"),
+			["Try a different approach", "Stop this run"],
+		);
 	});
 });

@@ -11,6 +11,7 @@ import {
 	setActiveConnectorSupervisor,
 } from "../../services/connectors/connector-supervisor";
 import { reconnectDaemonConnectors } from "../../services/connectors/daemon-connector-reconnect";
+import { initializeLiteLLMModelCatalog } from "../../services/llms/litellm-catalog-cache";
 import { createLocalHubScheduleRuntimeHandlers } from "../daemon/runtime-handlers";
 import { resolveHubEndpointOptions } from "../discovery/defaults";
 import {
@@ -159,6 +160,7 @@ async function main(): Promise<void> {
 	ensureLoopbackProxyBypass();
 	const options = parseArgs(process.argv.slice(2));
 	process.chdir(options.cwd);
+	await initializeLiteLLMModelCatalog();
 
 	const endpoint = resolveHubEndpointOptions({
 		host: options.host,

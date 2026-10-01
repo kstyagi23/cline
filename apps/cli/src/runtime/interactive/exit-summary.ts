@@ -1,5 +1,6 @@
 import type { SessionAccumulatedUsage, SessionRecord } from "@cline/core";
 import type { Message } from "@cline/shared";
+import { CLI_COMMAND } from "../../branding";
 import { c, formatUsd } from "../../utils/output";
 import { shouldShowCliUsageCost } from "../../utils/usage-cost-display";
 
@@ -93,7 +94,7 @@ export function formatInteractiveExitSummary(
 		showUsageCost && typeof summary.totalCost === "number"
 			? `  Cost      ${formatUsd(summary.totalCost)}`
 			: undefined,
-		`  Continue  ${c.cyan}cline --id ${summary.sessionId}${c.reset}`,
+		`  Continue  ${c.cyan}${CLI_COMMAND} --id ${summary.sessionId}${c.reset}`,
 		"",
 	];
 	return lines.filter((line): line is string => line !== undefined).join("\n");

@@ -4,6 +4,7 @@ import {
 	HubScheduleService,
 	NodeHubClient,
 } from "@cline/core";
+import { APP_NAME } from "../../branding";
 import {
 	ensureCliHubServer,
 	parseHubEndpointOverride,
@@ -33,7 +34,7 @@ export class HubScheduleClient {
 			const client = new NodeHubClient({
 				url: this.url,
 				clientType: "cli-schedule",
-				displayName: "Cline CLI scheduler",
+				displayName: `${APP_NAME} CLI scheduler`,
 				workspaceRoot: this.workspaceRoot,
 				cwd: this.workspaceRoot,
 				authToken: this.authToken,

@@ -5,6 +5,7 @@ import {
 	fetchModelIdsFromSource,
 	resolveModelsSourceUrl,
 } from "../providers/model-source";
+import { initializeLiteLLMModelCatalog } from "./litellm-catalog-cache";
 import type {
 	ModelCatalogConfig,
 	ModelInfo,
@@ -610,14 +611,17 @@ async function fetchLiteLlmPrivateModels(
 							continue;
 						}
 						const info = model.model_info;
-						const converted = buildModelFromPrivateSource(modelId, {
-							name: displayName ?? modelId,
-							maxTokens: info?.max_output_tokens ?? info?.max_tokens,
-							maxInputTokens: info?.max_input_tokens ?? info?.max_tokens,
-							supportsImages: info?.supports_vision,
-							supportsPromptCache: info?.supports_prompt_caching,
-							supportsReasoning: info?.supports_reasoning,
-						});
+						const converted = Llms.enrichLiteLLMModelInfo(
+							buildModelFromPrivateSource(modelId, {
+								name: displayName ?? modelId,
+								maxTokens: info?.max_output_tokens ?? info?.max_tokens,
+								maxInputTokens: info?.max_input_tokens ?? info?.max_tokens,
+								supportsImages: info?.supports_vision,
+								supportsPromptCache: info?.supports_prompt_caching,
+								supportsReasoning: info?.supports_reasoning,
+							}),
+							"litellm",
+						);
 						models[modelId] = converted;
 						if (displayName) {
 							models[displayName] = {
@@ -944,6 +948,7 @@ export async function resolveProviderConfig(
 	}
 
 	try {
+		await initializeLiteLLMModelCatalog({ cachedOnly: true });
 		const liveCatalog = modelCatalog?.loadLatestOnInit
 			? await getLiveModelsCatalog(modelCatalog)
 			: undefined;
@@ -971,7 +976,7 @@ export async function resolveProviderConfig(
 					baseUrl: defaults.baseUrl,
 				})
 			: config;
-		const publicModels = publicConfig
+		const publicModels: Record<string, ModelInfo> = publicConfig
 			? await getPublicProviderModels(
 					providerId,
 					modelCatalog,
@@ -992,7 +997,22 @@ export async function resolveProviderConfig(
 
 		return {
 			...defaults,
-			knownModels,
+			knownModels: Object.fromEntries(
+				Object.entries(knownModels).map(([id, model]) => [
+					id,
+					{
+						...Llms.enrichLiteLLMModelInfo(
+							model,
+							providerId,
+							providerId !== "litellm" && !hasPublicModelSource,
+						),
+						...liveModels[id],
+						...privateModels[id],
+						...publicModels[id],
+						...config?.knownModels?.[id],
+					},
+				]),
+			),
 		};
 	} catch (error) {
 		if (modelCatalog?.failOnError) {

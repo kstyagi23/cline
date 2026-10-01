@@ -1151,16 +1151,39 @@ function calculateUsageCostFromPricing(
 	}
 
 	const pricing = pricingValue as Record<string, unknown>;
-	const inputPrice = getNumericValue(pricing.input);
-	const outputPrice = getNumericValue(pricing.output);
+	let tier: Record<string, unknown> | undefined;
+	let highestThreshold = -1;
+	if (Array.isArray(pricing.tiers)) {
+		for (const candidate of pricing.tiers) {
+			if (!candidate || typeof candidate !== "object") continue;
+			const threshold = getNumericValue(candidate.aboveInputTokens);
+			// AI SDK inputTokens already includes cache reads and writes.
+			if (
+				threshold !== undefined &&
+				threshold >= 0 &&
+				usage.inputTokens > threshold &&
+				threshold > highestThreshold
+			) {
+				tier = candidate;
+				highestThreshold = threshold;
+			}
+		}
+	}
+	const inputPrice =
+		getNumericValue(tier?.input) ?? getNumericValue(pricing.input);
+	const outputPrice =
+		getNumericValue(tier?.output) ?? getNumericValue(pricing.output);
 
 	if (inputPrice === undefined || outputPrice === undefined) {
 		return undefined;
 	}
 
-	const cacheReadPrice = getNumericValue(pricing.cacheRead) ?? 0;
+	const cacheReadPrice =
+		getNumericValue(tier?.cacheRead) ?? getNumericValue(pricing.cacheRead) ?? 0;
 	const cacheWritePrice =
-		getNumericValue(pricing.cacheWrite) ?? inputPrice * 1.25;
+		getNumericValue(tier?.cacheWrite) ??
+		getNumericValue(pricing.cacheWrite) ??
+		inputPrice * 1.25;
 	const billableInputTokens = Math.max(
 		0,
 		usage.inputTokens - usage.cacheReadTokens - usage.cacheWriteTokens,

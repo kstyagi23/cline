@@ -1,4 +1,5 @@
 import * as p from "@clack/prompts";
+import { CLI_COMMAND } from "../../branding";
 import { runConnectAdapter } from "../../commands/connect";
 import {
 	PLATFORMS,
@@ -220,7 +221,7 @@ export async function runConnectWizard(): Promise<number> {
 	args.push("-i");
 
 	p.log.success(
-		`Running: cline connect ${platform.id} ${redactCommandArgs(args)}`,
+		`Running: ${CLI_COMMAND} connect ${platform.id} ${redactCommandArgs(args)}`,
 	);
 	p.outro("Starting connector (Ctrl+C to stop)");
 

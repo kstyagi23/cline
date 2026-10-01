@@ -2,6 +2,7 @@
 import { describeOutdatedHubSessions } from "@cline/shared";
 import type { ChoiceContext } from "@opentui-ui/dialog";
 import { useDialogKeyboard } from "@opentui-ui/dialog/react";
+import { APP_NAME } from "../../../branding";
 import { useDialogPalette } from "../../hooks/use-theme";
 import { resolveHubUpdateRequiredKeyAction } from "./hub-update-required-helpers";
 
@@ -41,7 +42,7 @@ export function HubUpdateRequiredContent(
 					CLI cannot talk to.
 				</text>
 				<text selectable>
-					Update and restart Cline to reconnect to the running Hub.
+					Update and restart {APP_NAME} to reconnect to the running Hub.
 				</text>
 			</box>
 			<box flexDirection="row">

@@ -21,6 +21,11 @@ describe("command palette", () => {
 		expect(labels).toContain("Manage MCP Servers");
 		expect(labels).toContain("Manage Plugins");
 		expect(labels).toContain("Compact Context");
+		expect(labels).toContain("Exit Glyph");
+		expect(labels).not.toContain("Exit Cline");
+		expect(
+			items.find((item) => item.result.action === "account")?.description,
+		).toBe("View or switch your Cline account");
 		expect(labels).not.toContain("/settings");
 		expect(labels).not.toContain("Toggle Plan/Act Mode");
 		expect(labels).not.toContain("Toggle Auto-Approve");

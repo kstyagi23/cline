@@ -8,6 +8,7 @@ import {
 	type UserInstructionConfigService,
 } from "@cline/core";
 import { formatModeSwitchNotice } from "@cline/shared";
+import { CLI_COMMAND } from "../branding";
 import type { CliMigrationNotice } from "../kanban-migration/notice";
 import { logCliError } from "../logging/errors";
 import { exportHistorySession } from "../session/history-export";
@@ -899,8 +900,8 @@ export async function runInteractive(
 		const exitCode = await checkForUpdates({ includeKanban: false });
 		writeln(
 			exitCode === 0
-				? "Start cline again to reconnect to the updated Hub."
-				: "Update did not complete. Run 'cline update' manually, then start cline again.",
+				? `Start ${CLI_COMMAND} again to reconnect to the updated Hub.`
+				: `Update did not complete. Run '${CLI_COMMAND} update' manually, then start ${CLI_COMMAND} again.`,
 		);
 	}
 }

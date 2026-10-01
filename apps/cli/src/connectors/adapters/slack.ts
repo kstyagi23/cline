@@ -14,6 +14,7 @@ import {
 	ThreadImpl,
 } from "chat";
 import type { Command } from "commander";
+import { CLI_COMMAND } from "../../branding";
 import type { CliLoggerAdapter } from "../../logging/adapter";
 import { createCliLoggerAdapter } from "../../logging/adapter";
 import {
@@ -777,8 +778,7 @@ class SlackConnector extends ConnectorBase<
 			formatAlreadyRunningMessage: formatAlreadyRunning,
 			formatBackgroundStartMessage: (pid) =>
 				`[slack] starting background connector pid=${pid} user=${options.userName} mode=${options.connectionMode}`,
-			foregroundHint:
-				"[slack] use `cline connect slack -i ...` to run in the foreground",
+			foregroundHint: `[slack] use \`${CLI_COMMAND} connect slack -i ...\` to run in the foreground`,
 			launchFailureMessage: "failed to launch Slack connector in background",
 		});
 		if (backgroundExitCode !== undefined) {

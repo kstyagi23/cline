@@ -1,4 +1,5 @@
 import * as p from "@clack/prompts";
+import { APP_NAME, CLI_COMMAND } from "../../branding";
 import {
 	ensureSchedulerHub,
 	type HubScheduleClient,
@@ -113,7 +114,7 @@ async function actionCreate(client: HubScheduleClient): Promise<void> {
 	}
 
 	const prompt = await p.text({
-		message: "What should Cline do?",
+		message: `What should ${APP_NAME} do?`,
 		placeholder: "Review open PRs and post summaries",
 		validate: (v) => {
 			if (!v?.trim()) return "Prompt is required";
@@ -404,7 +405,7 @@ export async function runScheduleWizard(): Promise<number> {
 	if (!ensured.ok) {
 		s.stop("Failed to connect to hub server");
 		p.log.error(
-			"Schedules require the hub server. Start it with: cline hub start",
+			`Schedules require the hub server. Start it with: ${CLI_COMMAND} hub start`,
 		);
 		p.outro("Failed");
 		return 1;

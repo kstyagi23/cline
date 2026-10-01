@@ -9,6 +9,7 @@ import {
 } from "@cline/core";
 import { resolveClineBuildEnv } from "@cline/shared";
 import { version } from "../../package.json";
+import { APP_NAME, CLI_COMMAND } from "../branding";
 import { c, writeErr, writeln } from "../utils/output";
 import {
 	getInstalledKanbanVersion,
@@ -350,7 +351,7 @@ async function otherCliClientsAttached(): Promise<boolean> {
 		url: discovery.url,
 		authToken: discovery.authToken,
 		clientType: "cli-update-check",
-		displayName: "cline update check",
+		displayName: `${CLI_COMMAND} update check`,
 	});
 	try {
 		const reply = await client.command("client.list", {}, undefined, {
@@ -454,7 +455,7 @@ export async function checkForUpdates(
 	const currentVersion = version;
 	const includeKanban = options.includeKanban ?? true;
 	writeln(
-		`${c.cyan}Checking for updates${includeKanban ? " to Cline CLI and kanban" : ""}…${c.reset}`,
+		`${c.cyan}Checking for updates${includeKanban ? ` to ${APP_NAME} CLI and kanban` : ""}…${c.reset}`,
 	);
 
 	const { packageName, updateCommand, packageManager } =
@@ -540,7 +541,7 @@ export async function checkForUpdates(
 		if (cliUpdateAvailable && latestVersion) {
 			if (!updateCommand) {
 				writeln(
-					`${c.dim}Unable to determine Cline update command. Please update manually with your package manager.${c.reset}`,
+					`${c.dim}Unable to determine ${APP_NAME} update command. Please update manually with your package manager.${c.reset}`,
 				);
 				hadFailure = true;
 			} else {
@@ -556,11 +557,11 @@ export async function checkForUpdates(
 					if (exitCode === 0) {
 						installedUpdates.push(`${packageName}@${latestVersion}`);
 						writeln(
-							`${c.dim}The update takes effect the next time cline starts.${c.reset}`,
+							`${c.dim}The update takes effect the next time ${CLI_COMMAND} starts.${c.reset}`,
 						);
 					} else {
 						writeErr(
-							`Cline update failed (exit code ${exitCode}). Try running: ${manualUpdateCommand.command}`,
+							`${APP_NAME} update failed (exit code ${exitCode}). Try running: ${manualUpdateCommand.command}`,
 						);
 						hadFailure = true;
 					}
@@ -568,7 +569,7 @@ export async function checkForUpdates(
 					const message =
 						error instanceof Error ? error.message : String(error);
 					writeErr(
-						`Failed to run Cline update command ${manualUpdateCommand.command}: ${message}`,
+						`Failed to run ${APP_NAME} update command ${manualUpdateCommand.command}: ${message}`,
 					);
 					hadFailure = true;
 				}

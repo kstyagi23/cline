@@ -4,8 +4,13 @@ import type {
 	GatewayProviderFactory,
 	GatewayProviderRegistration,
 	GatewayStreamRequest,
+	JsonValue,
 } from "@cline/shared";
 import { nanoid } from "nanoid";
+import {
+	enrichLiteLLMModelInfo,
+	getLiteLLMModelInfo,
+} from "../catalog/catalog-litellm";
 import type {
 	ModelInfo,
 	ProviderClient,
@@ -70,6 +75,9 @@ function toGatewayModelDefinition(
 		capabilities: toGatewayModelCapabilities(model.capabilities),
 		reasoningOptions: model.reasoningOptions,
 		metadata: {
+			...(model.metadata?.litellm
+				? { litellm: model.metadata.litellm as JsonValue }
+				: {}),
 			...(model.metadata?.apiProtocol
 				? { apiProtocol: model.metadata.apiProtocol }
 				: {}),
@@ -605,13 +613,15 @@ function toApiStreamChunk(
 }
 
 function resolveModelInfo(config: ProviderConfig): ModelInfo {
-	return (
+	return enrichLiteLLMModelInfo(
 		config.modelInfo ??
-		(config.modelId ? config.knownModels?.[config.modelId] : undefined) ?? {
-			id: config.modelId,
-			name: config.modelId,
-			capabilities: ["streaming"],
-		}
+			(config.modelId ? config.knownModels?.[config.modelId] : undefined) ??
+			getLiteLLMModelInfo(config.modelId, config.providerId) ?? {
+				id: config.modelId,
+				name: config.modelId,
+				capabilities: ["streaming"],
+			},
+		config.providerId,
 	);
 }
 

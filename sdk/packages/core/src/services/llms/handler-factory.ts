@@ -1,6 +1,8 @@
 import {
 	createGateway,
 	createHandlerAsync,
+	enrichLiteLLMModelInfo,
+	getLiteLLMModelInfo,
 	hasRegisteredHandler,
 	MODEL_COLLECTIONS_BY_PROVIDER_ID,
 	normalizeProviderId,
@@ -13,6 +15,7 @@ import type {
 	BasicLogger,
 	GatewayModelDefinition,
 	ITelemetryService,
+	JsonValue,
 	ModelInfo,
 } from "@cline/shared";
 import { createAgentModelFromApiHandler } from "./apihandler-agent-model-adapter";
@@ -104,11 +107,27 @@ export function resolveKnownModelsFromConfig(
 	config: AgentConfig,
 ): Record<string, ModelInfo> | undefined {
 	const pc = config.providerConfig as ProviderConfig | undefined;
-	const knownModels = pc?.knownModels
+	const sourceModels = pc?.knownModels
 		? pc.knownModels
 		: (config.knownModels ??
 			MODEL_COLLECTIONS_BY_PROVIDER_ID[config.providerId]?.models ??
 			undefined);
+	const knownModels = sourceModels
+		? Object.fromEntries(
+				Object.entries(sourceModels).map(([id, model]) => [
+					id,
+					enrichLiteLLMModelInfo(
+						model,
+						config.providerId,
+						!pc?.knownModels && !config.knownModels,
+					),
+				]),
+			)
+		: undefined;
+	const selectedFacts = getLiteLLMModelInfo(config.modelId, config.providerId);
+	if (selectedFacts && knownModels && !knownModels[config.modelId]) {
+		knownModels[config.modelId] = selectedFacts;
+	}
 	// Caller-configured limits are authoritative for the selected model —
 	// surface them to the gateway so the resolved model definition carries
 	// the right limits (e.g. Ollama's num_ctx derives from the resolved
@@ -158,6 +177,9 @@ function toGatewayConfiguredModel(
 		capabilities: toGatewayModelCapabilities(model.capabilities),
 		reasoningOptions: model.reasoningOptions,
 		metadata: {
+			...(model.metadata?.litellm
+				? { litellm: model.metadata.litellm as JsonValue }
+				: {}),
 			// Configured models replace gateway catalog entries, so retain the
 			// per-model protocol used by providers with mixed API endpoints.
 			...(model.metadata?.apiProtocol

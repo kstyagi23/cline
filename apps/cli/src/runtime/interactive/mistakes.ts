@@ -1,3 +1,5 @@
+import { APP_NAME } from "../../branding";
+
 export interface MistakeLimitContext {
 	iteration: number;
 	consecutiveMistakes: number;
@@ -23,7 +25,7 @@ export function createMistakeLimitDecisionResolver(input: {
 		const summary = detail
 			? `${context.reason}: ${detail}`
 			: `${context.reason} at iteration ${context.iteration}`;
-		const questionText = `mistake_limit_reached (${context.consecutiveMistakes}/${context.maxConsecutiveMistakes})\nLatest: ${summary}\nHow should Cline continue?`;
+		const questionText = `mistake_limit_reached (${context.consecutiveMistakes}/${context.maxConsecutiveMistakes})\nLatest: ${summary}\nHow should ${APP_NAME} continue?`;
 		const questionOptions = ["Try a different approach", "Stop this run"];
 		const answer = input.askQuestionRef.current
 			? await input.askQuestionRef.current(questionText, questionOptions)

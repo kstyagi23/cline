@@ -17,6 +17,7 @@ import { type AddressInfo, createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join, relative, resolve } from "node:path";
 import { $ } from "bun";
+import { resolveSdkRuntimeBuildId } from "../../../sdk/packages/core/scripts/runtime-build-id";
 import {
 	parseBuildOptions,
 	shouldInstallNativeVariants,
@@ -57,8 +58,10 @@ function buildInlinedEnvDefines(): Record<string, string> {
 const pkg = JSON.parse(readFileSync(join(cliDir, "package.json"), "utf-8"));
 const version: string = pkg.version;
 const repository: unknown = pkg.repository;
+const runtimeBuildId = resolveSdkRuntimeBuildId(rootDir);
+const runtimeBuildEpochMs = Date.now();
 
-console.log(`Building @cline/cli v${version}`);
+console.log(`Building Glyph CLI (@cline/cli) v${version}`);
 
 const buildOptions = parseBuildOptions(process.argv.slice(2));
 
@@ -226,6 +229,10 @@ async function buildCompiledBinary(input: {
 			external: ["@anthropic-ai/vertex-sdk"],
 			define: {
 				OTUI_TREE_SITTER_WORKER_PATH: bunfsRoot + parserWorkerPath,
+				// CLI tsconfig paths bundle SDK source, bypassing its dist defines.
+				__CLINE_CORE_RUNTIME_BUILD_ID__: JSON.stringify(runtimeBuildId),
+				__CLINE_CORE_RUNTIME_BUILD_EPOCH_MS__:
+					JSON.stringify(runtimeBuildEpochMs),
 				// Inline telemetry/OTEL env vars at build time so the compiled
 				// binary ships with production telemetry configuration baked in.
 				...buildInlinedEnvDefines(),
@@ -315,13 +322,25 @@ for (const item of targets) {
 				await $`${outfile} hub start`.env(smokeEnv).quiet();
 				const status = JSON.parse(
 					await $`${outfile} hub status`.env(smokeEnv).text(),
-				) as { running?: boolean; coreVersion?: string };
-				if (!status.running || !status.coreVersion) {
+				) as { running?: boolean; coreVersion?: string; buildId?: string };
+				if (
+					!status.running ||
+					!status.coreVersion ||
+					status.buildId !== runtimeBuildId
+				) {
 					throw new Error(
 						`Expected a healthy hub, got ${JSON.stringify(status)}`,
 					);
 				}
 				console.log(`  Passed: hub core ${status.coreVersion}`);
+				const history = JSON.parse(
+					await $`${outfile} history --json`.env(smokeEnv).text(),
+				);
+				if (!Array.isArray(history) || history.length !== 0) {
+					throw new Error(
+						`Expected empty isolated history, got ${JSON.stringify(history)}`,
+					);
+				}
 			} finally {
 				await $`${outfile} hub stop`.env(smokeEnv).quiet().nothrow();
 				rmSync(smokeHome, { recursive: true, force: true });
@@ -359,11 +378,13 @@ for (const item of targets) {
 			{
 				name,
 				version,
-				description: `Cline CLI binary for ${displayOs} ${item.arch}`,
+				displayName: "Glyph",
+				description: `Glyph CLI binary for ${displayOs} ${item.arch}`,
 				os: [item.os],
 				cpu: [item.arch],
 				...(repository ? { repository } : {}),
 				bin: {
+					glyph: `bin/${binaryName}`,
 					cline: `bin/${binaryName}`,
 				},
 			},

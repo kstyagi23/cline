@@ -292,6 +292,46 @@ describe("hub discovery", () => {
 		await clearHubDiscovery(discoveryPath);
 	});
 
+	it("times out a stalled probe even when the caller supplies a signal", async () => {
+		const originalFetch = globalThis.fetch;
+		const caller = new AbortController();
+		globalThis.fetch = ((_url, options) =>
+			new Promise((_resolve, reject) => {
+				const signal = options?.signal;
+				expect(signal).toBeDefined();
+				signal?.addEventListener("abort", () => reject(signal.reason), {
+					once: true,
+				});
+			})) as typeof fetch;
+		try {
+			await expect(
+				probeHubServer("ws://127.0.0.1:25463/hub", {
+					signal: caller.signal,
+				}),
+			).resolves.toBeUndefined();
+			expect(caller.signal.aborted).toBe(false);
+		} finally {
+			globalThis.fetch = originalFetch;
+		}
+	});
+
+	it("preserves caller cancellation of a probe", async () => {
+		const originalFetch = globalThis.fetch;
+		const caller = new AbortController();
+		caller.abort();
+		globalThis.fetch = (async (_url, options) => {
+			expect(options?.signal?.aborted).toBe(true);
+			throw options?.signal?.reason;
+		}) as typeof fetch;
+		try {
+			await expect(
+				probeHubServer("ws://127.0.0.1:25463/hub", { signal: caller.signal }),
+			).resolves.toBeUndefined();
+		} finally {
+			globalThis.fetch = originalFetch;
+		}
+	});
+
 	it("returns only public health fields for unauthenticated probes", async () => {
 		const fetchMock = async () =>
 			({

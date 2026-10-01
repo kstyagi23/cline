@@ -46,6 +46,7 @@ export type PendingCapabilityRequest = {
 	onProgress?: (payload: Record<string, unknown>) => void;
 	resolve: (result: {
 		ok: boolean;
+		cancelled?: boolean;
 		payload?: Record<string, unknown>;
 		error?: string;
 	}) => void;

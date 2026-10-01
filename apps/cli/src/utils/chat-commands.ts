@@ -1,5 +1,6 @@
 import { stat } from "node:fs/promises";
 import { resolve } from "node:path";
+import { APP_NAME } from "../branding";
 import { resolveWorkspaceRoot } from "./helpers";
 
 export type ChatCommandState = {
@@ -276,7 +277,7 @@ function usage(text: string): string {
 
 function formatHelp(state: ChatCommandState): string {
 	return [
-		"Cline connector commands:",
+		`${APP_NAME} connector commands:`,
 		"/help or /start - show this help",
 		"/new or /clear - start a fresh session",
 		"/whereami - show thread, cwd, tools, and yolo state",

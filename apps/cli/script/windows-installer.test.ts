@@ -139,6 +139,45 @@ async function uninstall(dir: string): Promise<number> {
 	);
 }
 
+describe("Windows installer command packaging", () => {
+	test("uses Glyph display labels and retains upgrade and copyright identities", () => {
+		const template = readFileSync(
+			resolve(import.meta.dir, "windows-installer/installer.nsi"),
+			"utf8",
+		);
+		expect(template).toContain('Name "Glyph CLI"');
+		expect(template).toContain('BrandingText "Glyph CLI"');
+		expect(template).toContain('"ProductName" "Glyph CLI"');
+		expect(template).toContain('"DisplayName" "Glyph CLI (');
+		expect(template).toContain('InstallDir "$PROFILE\\cline"');
+		expect(template).toContain('"LegalCopyright" "Cline"');
+		expect(template).toContain('"Publisher" "Cline"');
+		expect(
+			readFileSync(
+				resolve(import.meta.dir, "build-windows-installer.ts"),
+				"utf8",
+			),
+		).toContain("Uninstall\\\\ClineCLI");
+	});
+
+	test("creates a small forwarding shim and removes it before the bin directory", () => {
+		const template = readFileSync(
+			resolve(import.meta.dir, "windows-installer/installer.nsi"),
+			"utf8",
+		);
+		expect(template).toContain('FileOpen $0 "$INSTDIR\\bin\\glyph.cmd" w');
+		expect(template).toContain('"%~dp0cline.exe" %*');
+		expect(template).toContain("setlocal DisableDelayedExpansion");
+		expect(template).toContain("exit /b %errorlevel%");
+		expect(template).not.toContain("glyph.exe");
+		expect(template).toContain('Delete "$INSTDIR\\bin\\glyph.cmd"');
+		expect(template.indexOf('Delete "$INSTDIR\\bin\\glyph.cmd"')).toBeLessThan(
+			// biome-ignore lint/suspicious/noTemplateCurlyInString: literal NSIS preprocessor syntax
+			template.indexOf('!include "${UNINSTALL_FILES}"'),
+		);
+	});
+});
+
 describe.skipIf(!windows)("Windows CLI installer", () => {
 	beforeAll(async () => {
 		originalRegistryPath = await readPath("Environment");
@@ -151,7 +190,11 @@ describe.skipIf(!windows)("Windows CLI installer", () => {
 		const fixtureSource = join(testRoot, "fixture.ts");
 		writeFileSync(
 			fixtureSource,
-			'if (process.argv.includes("--hold")) { await Bun.write(process.argv.at(-1)!, "ready"); setInterval(() => {}, 1000); } else console.log("1.2.3");',
+			[
+				'if (process.argv.includes("--hold")) { await Bun.write(process.argv.at(-1)!, "ready"); setInterval(() => {}, 1000); }',
+				'else if (process.argv.includes("--args")) { console.log(JSON.stringify(process.argv.slice(process.argv.indexOf("--args") + 1))); process.exit(7); }',
+				'else console.log("1.2.3");',
+			].join("\n"),
 		);
 		await runInstallerCommand([
 			process.execPath,
@@ -244,6 +287,15 @@ describe.skipIf(!windows)("Windows CLI installer", () => {
 		expect(readFileSync(join(dir, "bin/cline.exe"))).toEqual(
 			readFileSync(fixture),
 		);
+		expect(readFileSync(join(dir, "bin/glyph.cmd"), "utf8")).toBe(
+			'@echo off\r\nsetlocal DisableDelayedExpansion\r\n"%~dp0cline.exe" %*\r\nexit /b %errorlevel%\r\n',
+		);
+		expect(existsSync(join(dir, "bin/glyph.exe"))).toBe(false);
+		expect(
+			await powershell(
+				`${registryPreamble}$key = $registry.OpenSubKey(${quote(installKey)}); $key.GetValue('DisplayName'); $key.Dispose(); $registry.Dispose();`,
+			),
+		).toBe(`Glyph CLI (${process.arch})`);
 		expect(
 			readFileSync(join(dir, "cline-hub/webview/index.html"), "utf8"),
 		).toBe("hub assets");
@@ -254,16 +306,36 @@ describe.skipIf(!windows)("Windows CLI installer", () => {
 		expect((await readPath()).value).toBe(
 			`${join(dir, "bin")};${originalPath}`,
 		);
-		expect(
+		for (const command of ["glyph", "cline"]) {
+			expect(
+				await powershell(
+					`${command} --version`,
+					`${join(dir, "bin")};${originalUserPath}`,
+				),
+			).toBe("1.2.3");
+		}
+		const forwardedArgs = [
+			"two words",
+			"dollar$bang!",
+			"amp&pipe|",
+			"percent%value",
+		];
+		// CMD metacharacters need CMD quotes. PowerShell's native .cmd binder
+		// strips its own quotes from bare '&' / '|' arguments before the shim.
+		const commandLine = `glyph --args ${forwardedArgs.map((arg) => `"${arg}"`).join(" ")}`;
+		const forwarded = JSON.parse(
 			await powershell(
-				"cline --version",
+				`$output = cmd.exe /d /s /c ${quote(commandLine)}; @{output = $output; code = $LASTEXITCODE} | ConvertTo-Json -Compress`,
 				`${join(dir, "bin")};${originalUserPath}`,
 			),
-		).toBe("1.2.3");
+		);
+		expect(JSON.parse(forwarded.output)).toEqual(forwardedArgs);
+		expect(forwarded.code).toBe(7);
 		writeFileSync(join(dir, "keep-user-file.txt"), "keep");
 		expect(await uninstall(dir)).toBe(0);
 		expect((await readPath()).value).toBe(originalPath);
 		expect(existsSync(join(dir, "bin/cline.exe"))).toBe(false);
+		expect(existsSync(join(dir, "bin/glyph.cmd"))).toBe(false);
 		expect(existsSync(join(dir, "cline-hub/webview/index.html"))).toBe(false);
 		expect(readFileSync(join(dir, "keep-user-file.txt"), "utf8")).toBe("keep");
 	}, 90_000);

@@ -11,6 +11,7 @@ import {
 	listSessionHistoryFromBackend,
 	resolveSessionBackend,
 } from "@cline/core";
+import { APP_NAME } from "../branding";
 import {
 	createCliMessagesArtifactUploader,
 	prepareCliEnterpriseIntegration,
@@ -54,7 +55,7 @@ export async function createCliCore(options?: {
 						cwd,
 						workspaceRoot,
 						clientType: "cli",
-						displayName: "Cline CLI",
+						displayName: `${APP_NAME} CLI`,
 					},
 				}
 			: {}),

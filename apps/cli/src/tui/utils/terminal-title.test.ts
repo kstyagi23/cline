@@ -8,7 +8,13 @@ describe("deriveTerminalTitle", () => {
 				appView: "home",
 				entries: [{ kind: "user_submitted", text: "hello" }],
 			}),
-		).toBe("Cline");
+		).toBe("Glyph");
+	});
+
+	it("uses Glyph for onboarding and empty chat sessions", () => {
+		for (const appView of ["onboarding", "chat"] as const) {
+			expect(deriveTerminalTitle({ appView, entries: [] })).toBe("Glyph");
+		}
 	});
 
 	it("uses the latest submitted user message in chat", () => {

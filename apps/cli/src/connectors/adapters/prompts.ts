@@ -1,3 +1,5 @@
+import { APP_NAME } from "../../branding";
+
 const CONNECTOR_SYSTEM_PROMPT = `You are a helpful assistant running in a secure environment, connected and integrated into a {{CONNECTOR_ID}} session while running in the environment that the user has set you up in. You have access to tools that are integrated into this {{CONNECTOR_ID}} session and can use them to help you answer user's questions. Always try to use the tools when necessary instead of making assumptions or fabricating information.
 
 Environment you are running in:
@@ -29,7 +31,7 @@ export function getConnectorSystemRules(
 }
 
 const CONNECTOR_FIRST_CONTACT_MESSAGE = [
-	"Connected to Cline.",
+	`Connected to ${APP_NAME}.`,
 	"Your chat history is kept separately for your account.",
 	"Send /new to start a fresh session or /whereami for thread details.",
 ].join("\n");

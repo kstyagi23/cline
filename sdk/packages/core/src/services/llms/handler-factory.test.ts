@@ -22,6 +22,8 @@ vi.mock("@cline/llms", async (importOriginal) => {
 		MODEL_COLLECTIONS_BY_PROVIDER_ID: {},
 		hasRegisteredHandler: gatewayMock.hasRegisteredHandler,
 		createHandlerAsync: gatewayMock.createHandlerAsync,
+		enrichLiteLLMModelInfo: original.enrichLiteLLMModelInfo,
+		getLiteLLMModelInfo: original.getLiteLLMModelInfo,
 		normalizeProviderId: (id: string) => id,
 		// Capability translation is the behaviour under test in the gateway model
 		// assertions below, so use the real translator rather than a stub that

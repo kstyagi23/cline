@@ -9,21 +9,21 @@ SetCompressorDictSize 32
 !include "x64.nsh"
 !include "WinMessages.nsh"
 
-Name "Cline CLI"
+Name "Glyph CLI"
 OutFile "${OUTPUT_FILE}"
 InstallDir "$PROFILE\cline"
 InstallDirRegKey HKCU "${INSTALL_KEY}" "InstallLocation"
-BrandingText "Cline CLI"
+BrandingText "Glyph CLI"
 VIProductVersion "${NUMERIC_VERSION}"
-VIAddVersionKey /LANG=1033 "ProductName" "Cline CLI"
-VIAddVersionKey /LANG=1033 "FileDescription" "Cline CLI installer for Windows ${ARCH}"
+VIAddVersionKey /LANG=1033 "ProductName" "Glyph CLI"
+VIAddVersionKey /LANG=1033 "FileDescription" "Glyph CLI installer for Windows ${ARCH}"
 VIAddVersionKey /LANG=1033 "FileVersion" "${VERSION}"
 VIAddVersionKey /LANG=1033 "ProductVersion" "${VERSION}"
 VIAddVersionKey /LANG=1033 "LegalCopyright" "Cline"
 
 !define MUI_ABORTWARNING
-!define MUI_WELCOMEPAGE_TEXT "Install Cline CLI ${VERSION} for your Windows user.$\r$\n$\r$\nThe default folder is $PROFILE\cline. Setup adds its bin folder to your user PATH so you can run cline from your terminal."
-!define MUI_FINISHPAGE_TEXT "Cline CLI is installed in:$\r$\n$INSTDIR$\r$\n$\r$\nOpen a new terminal and run:$\r$\ncline$\r$\n$\r$\nIf your terminal app was already open, close and reopen it to refresh PATH."
+!define MUI_WELCOMEPAGE_TEXT "Install Glyph CLI ${VERSION} for your Windows user.$\r$\n$\r$\nThe default folder remains $PROFILE\cline for compatibility. Setup adds its bin folder to your user PATH so you can run glyph (or the cline compatibility command) from your terminal."
+!define MUI_FINISHPAGE_TEXT "Glyph CLI is installed in:$\r$\n$INSTDIR$\r$\n$\r$\nOpen a new terminal and run:$\r$\nglyph$\r$\n$\r$\nThe cline command remains available. If your terminal app was already open, close and reopen it to refresh PATH."
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
@@ -84,7 +84,7 @@ Function ${PREFIX}CheckRunningCLI
         Goto probe
       ${EndIf}
     ${EndIf}
-    MessageBox MB_RETRYCANCEL|MB_ICONSTOP "Close Cline, then stop its background hub:$\r$\n$\"$INSTDIR\bin\cline.exe$\" hub stop$\r$\n$\r$\nThen retry setup. Windows error: $0." /SD IDCANCEL IDRETRY retry
+    MessageBox MB_RETRYCANCEL|MB_ICONSTOP "Close Glyph, then stop its background hub:$\r$\n$\"$INSTDIR\bin\cline.exe$\" hub stop$\r$\n$\r$\nThen retry setup. Windows error: $0." /SD IDCANCEL IDRETRY retry
     SetErrorLevel 2
     Abort
   done:
@@ -112,10 +112,24 @@ FunctionEnd
 Section "Install"
   Call CheckRunningCLI
   !include "${INSTALL_FILES}"
+  ; Keep one compiled executable. The canonical command forwards directly,
+  ; without CALL's second expansion or delayed expansion of user arguments.
+  ClearErrors
+  FileOpen $0 "$INSTDIR\bin\glyph.cmd" w
+  IfErrors glyphShimFailed
+  FileWrite $0 '@echo off$\r$\nsetlocal DisableDelayedExpansion$\r$\n"%~dp0cline.exe" %*$\r$\nexit /b %errorlevel%$\r$\n'
+  FileClose $0
+  IfErrors glyphShimFailed
+  Goto glyphShimDone
+  glyphShimFailed:
+    MessageBox MB_OK|MB_ICONSTOP "Could not write the glyph command shim in $INSTDIR\bin." /SD IDOK
+    SetErrorLevel 4
+    Abort
+  glyphShimDone:
   SetOutPath "$INSTDIR"
   WriteUninstaller "$INSTDIR\Uninstall.exe"
   !insertmacro UpdatePath Add
-  WriteRegStr HKCU "${INSTALL_KEY}" "DisplayName" "Cline CLI (${ARCH})"
+  WriteRegStr HKCU "${INSTALL_KEY}" "DisplayName" "Glyph CLI (${ARCH})"
   WriteRegStr HKCU "${INSTALL_KEY}" "DisplayVersion" "${VERSION}"
   WriteRegStr HKCU "${INSTALL_KEY}" "Publisher" "Cline"
   WriteRegStr HKCU "${INSTALL_KEY}" "InstallLocation" "$INSTDIR"
@@ -131,6 +145,7 @@ SectionEnd
 Section "Uninstall"
   Call un.CheckRunningCLI
   !insertmacro UpdatePath Remove
+  Delete "$INSTDIR\bin\glyph.cmd"
   !include "${UNINSTALL_FILES}"
   Delete "$INSTDIR\Uninstall.exe"
   RMDir "$INSTDIR"
