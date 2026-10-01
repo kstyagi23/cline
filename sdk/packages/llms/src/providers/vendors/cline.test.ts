@@ -189,6 +189,63 @@ describe("createCline", () => {
 		expect(body.reasoning).toEqual({ enabled: true, max_tokens: 2048 });
 	});
 
+	it.each([
+		["cline", "doGenerate"],
+		["cline", "doStream"],
+		["cline-pass", "doGenerate"],
+		["cline-pass", "doStream"],
+	] as const)("preserves %s caller headers on the wire (%s)", async (providerId, operation) => {
+		const modelId = "deepseek/deepseek-v4-flash";
+		fetchMock.mockResolvedValue(
+			operation === "doStream"
+				? sseCompletionResponse(modelId)
+				: jsonCompletionResponse(modelId),
+		);
+		const module = await createClineProviderModule(
+			{
+				providerId,
+				apiKey: "test-key",
+				baseUrl: "https://api.cline.bot/api/v1",
+				fetch: fetchMock,
+				headers: {
+					"X-CLIENT-TYPE": "VSCode Extension",
+					"X-CLIENT-VERSION": "4.1.16",
+					"User-Agent": "Cline/4.1.16",
+				},
+			} as unknown as GatewayResolvedProviderConfig,
+			{ provider: { id: providerId } } as never,
+		);
+		const model = module.operations.language(modelId) as {
+			doGenerate: (options: unknown) => Promise<unknown>;
+			doStream: (
+				options: unknown,
+			) => Promise<{ stream: ReadableStream<unknown> }>;
+		};
+		const options = {
+			prompt: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
+		};
+		if (operation === "doStream") {
+			const { stream } = await model.doStream(options);
+			const reader = stream.getReader();
+			while (!(await reader.read()).done) {
+				/* Drain the response. */
+			}
+		} else {
+			await model.doGenerate(options);
+		}
+		expect(fetchMock).toHaveBeenCalledOnce();
+		expect(capturedRequestBody(fetchMock).stream ?? false).toBe(
+			operation === "doStream",
+		);
+		const [input, init] = fetchMock.mock.calls[0] ?? [];
+		const headers = new Headers(
+			init?.headers ?? (input as Request | undefined)?.headers,
+		);
+		expect(headers.get("X-CLIENT-TYPE")).toBe("VSCode Extension");
+		expect(headers.get("X-CLIENT-VERSION")).toBe("4.1.16");
+		expect(headers.get("User-Agent")).toMatch(/^Cline\/4\.1\.16\b/);
+	});
+
 	it("keeps max_tokens for non-reasoning models", async () => {
 		const modelId = "anthropic/claude-sonnet-4.6";
 		fetchMock.mockResolvedValue(jsonCompletionResponse(modelId));
@@ -214,6 +271,19 @@ function capturedRequestBody(
 ): Record<string, unknown> {
 	const init = fetchMock.mock.calls[0]?.[1];
 	return JSON.parse(String(init?.body)) as Record<string, unknown>;
+}
+
+function sseCompletionResponse(modelId: string): Response {
+	const events = [
+		`data: ${JSON.stringify({ id: "chatcmpl-test", created: 0, model: modelId, choices: [{ index: 0, delta: { role: "assistant", content: "OK" } }] })}`,
+		`data: ${JSON.stringify({ id: "chatcmpl-test", created: 0, model: modelId, choices: [{ index: 0, delta: {}, finish_reason: "stop" }], usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 } })}`,
+		"data: [DONE]",
+		"",
+	].join("\n\n");
+	return new Response(events, {
+		status: 200,
+		headers: { "content-type": "text/event-stream" },
+	});
 }
 
 function jsonCompletionResponse(modelId: string): Response {

@@ -6,6 +6,24 @@ function jwtWithPayload(payload: Record<string, unknown>): string {
 }
 
 describe("resolveProviderRequestHeaders", () => {
+	it.each([
+		["cline", "X-Task-ID"],
+		["cline-pass", "X-Task-ID"],
+		["openai-codex", "session_id"],
+		["opencode-go", "x-opencode-session"],
+	])("omits the %s session header for standalone requests", (providerId, header) => {
+		for (const sessionId of [undefined, "", "   "]) {
+			const headers = resolveProviderRequestHeaders({
+				providerId,
+				sessionId,
+				defaultSource: "cli",
+				coreVersion: "0.2.0",
+			});
+			expect(headers).not.toHaveProperty(header);
+			expect(headers).toHaveProperty("User-Agent");
+		}
+	});
+
 	it("adds required Cline billing headers after stored, config, and session layers", () => {
 		const headers = resolveProviderRequestHeaders({
 			providerId: "cline",

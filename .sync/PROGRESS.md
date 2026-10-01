@@ -17,6 +17,9 @@ U3/U4 / E: Deferred before source editing because legacy extension proto generat
 
 Batch 1 U1 verified: settings suite 65/65 across 11 files; root types pass; lint unchanged 39 warnings/80 infos; SDK, CLI/hub webview and desktop production builds pass separately. Clean root build exposes pre-existing grpc-tools Windows ARM download 404; dependencies restored with frozen install ignoring lifecycle scripts. No source/dependency fix for this environment failure.
 
-Current action: commit batch 1, then U2.
+Batch 1 committed: `1636a377d`.
+Batch 2 U2 verified: 43/43 tests across five llms files (header/wire and Glyph Responses/native reasoning/LiteLLM); SDK build, CLI build, all workspace typechecks pass; lint unchanged 39 warnings/80 infos. Added omission cases for all four affected provider IDs and undefined/empty/whitespace IDs.
+
+Current action: commit batch 2, then U5 desktop prompt drafts.
 
 Do not run `sync:cline`: it updates `cline_source`, prohibited by this workflow.
