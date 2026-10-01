@@ -15,6 +15,7 @@ import {
 	useDialogState,
 } from "@opentui-ui/dialog/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { CLI_COMMAND } from "../branding";
 import {
 	CLINE_PASS_NOTICE_ID,
 	shouldSuppressClineCliMigrationNoticeForActiveProvider,
@@ -624,7 +625,7 @@ function App(props: TuiProps) {
 					if (!update) {
 						// choice() resolves undefined on Esc; it does not reject.
 						showToast(
-							"The running Cline Hub stays on the older version. Run 'cline hub upgrade' once its sessions finish.",
+							`The running Cline Hub stays on the older version. Run '${CLI_COMMAND} hub upgrade' once its sessions finish.`,
 							"info",
 						);
 						refocusTextareaRef.current();
@@ -653,7 +654,7 @@ function App(props: TuiProps) {
 						showToast(
 							error instanceof Error && error.message
 								? error.message
-								: "Updating the Cline Hub failed. Run 'cline doctor fix' and try again.",
+								: `Updating the Cline Hub failed. Run '${CLI_COMMAND} doctor fix' and try again.`,
 							"error",
 						);
 					}
@@ -673,7 +674,7 @@ function App(props: TuiProps) {
 			showToast(
 				`The shared Cline Hub was updated${
 					hubCoreVersion ? ` (core ${hubCoreVersion})` : ""
-				}. Run 'cline update' and restart when convenient.`,
+				}. Run '${CLI_COMMAND} update' and restart when convenient.`,
 				"info",
 			);
 			return;
@@ -693,7 +694,7 @@ function App(props: TuiProps) {
 					return;
 				}
 				showToast(
-					"Hub still differs from this CLI. Run 'cline update' and restart when convenient.",
+					`Hub still differs from this CLI. Run '${CLI_COMMAND} update' and restart when convenient.`,
 					"info",
 				);
 				refocusTextareaRef.current();

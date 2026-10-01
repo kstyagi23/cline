@@ -1,10 +1,11 @@
 import * as os from "node:os";
 import type { RuntimeEnv } from "@cline/shared";
-import { displayName, version } from "../../package.json";
+import { version } from "../../package.json";
 
 export function getCliBuildInfo(): RuntimeEnv {
 	return {
-		name: displayName,
+		// Runtime/telemetry identity and log paths must not follow display branding.
+		name: "cline",
 		version,
 		platform: "terminal",
 		platform_version: process.version,

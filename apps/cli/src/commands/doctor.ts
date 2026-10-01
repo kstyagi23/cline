@@ -21,6 +21,7 @@ import {
 } from "@cline/shared";
 import { Command } from "commander";
 import { version as cliVersion } from "../../package.json";
+import { CLI_COMMAND } from "../branding";
 import { isProcessRunning } from "../connectors/common";
 import { getCliBuildInfo } from "../utils/common";
 import open from "../utils/open";
@@ -687,7 +688,7 @@ export async function runDoctorCommand(
 			before.staleSidecarPids.length > 0
 		) {
 			io.writeln(
-				"\nRun `cline doctor fix` to kill all stale local processes, including stale sidecars.",
+				`\nRun \`${CLI_COMMAND} doctor fix\` to kill all stale local processes, including stale sidecars.`,
 			);
 		}
 		return 0;

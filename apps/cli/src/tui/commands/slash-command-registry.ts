@@ -1,4 +1,5 @@
 import { formatUserCommandBlock } from "@cline/shared";
+import { APP_NAME } from "../../branding";
 import type { InteractiveSlashCommand } from "../interactive-welcome";
 
 export type SlashCommandSource =
@@ -115,7 +116,7 @@ const TUI_LOCAL_COMMANDS: Array<{
 	},
 	{
 		name: "quit",
-		description: "Exit Cline",
+		description: `Exit ${APP_NAME}`,
 	},
 ];
 

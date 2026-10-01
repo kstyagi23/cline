@@ -1,3 +1,4 @@
+import { APP_NAME } from "../branding";
 import { askQuestionInTerminal } from "../utils/approval";
 import type { Config } from "../utils/types";
 
@@ -45,7 +46,7 @@ export async function resolveMistakeLimitDecision(
 		};
 	}
 	const answer = await askQuestionInTerminal(
-		`mistake_limit_reached (${context.consecutiveMistakes}/${context.maxConsecutiveMistakes})\nLatest: ${summary}\nHow should Cline continue?`,
+		`mistake_limit_reached (${context.consecutiveMistakes}/${context.maxConsecutiveMistakes})\nLatest: ${summary}\nHow should ${APP_NAME} continue?`,
 		["Try a different approach", "Stop this run"],
 	);
 	const normalized = answer.trim().toLowerCase();

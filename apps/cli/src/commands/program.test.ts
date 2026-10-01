@@ -36,6 +36,17 @@ describe("root option help text", () => {
 		}
 	});
 
+	it("uses Glyph and the canonical glyph command without renaming providers", () => {
+		const program = createProgram().configureHelp({ helpWidth: 500 });
+		const help = program.helpInformation();
+
+		expect(program.name()).toBe("glyph");
+		expect(help).toContain("Usage: glyph");
+		expect(help).toContain("Glyph CLI - AI coding assistant in your terminal");
+		expect(help).toContain("Provider id (default: cline)");
+		expect(help).not.toContain("Cline CLI");
+	});
+
 	it("reports the actual resolver defaults for --config and --data-dir", () => {
 		// A wide help width keeps each option description on one line so the
 		// full default text can be matched.

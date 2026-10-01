@@ -9,7 +9,14 @@ import {
 	type UserInstructionConfigService,
 } from "@cline/core";
 import { type AgentMode, buildClineSystemPrompt } from "@cline/shared";
+import { APP_NAME, CLI_COMMAND } from "../branding";
 import { isImagePath, loadImageAsDataUrl } from "../utils/image-attachments";
+
+const CLI_BRANDING_RULES = [
+	`You are running in ${APP_NAME}. Use ${APP_NAME} as your user-facing name.`,
+	`Use \`${CLI_COMMAND}\` as the canonical application command in CLI guidance, for example \`${CLI_COMMAND} --help\`.`,
+	"Keep Cline and ClinePass provider, account, credit, and service names unchanged, along with @cline packages, CLINE_* environment variables, and .cline storage paths.",
+].join("\n");
 
 export async function resolveSystemPrompt(input: {
 	cwd: string;
@@ -22,8 +29,8 @@ export async function resolveSystemPrompt(input: {
 	// Mode-tag and plan-mode instructions are appended by the shared prompt
 	// builder itself (see MODE_TAG_INSTRUCTIONS / PLAN_MODE_INSTRUCTIONS in
 	// @cline/shared), so only the caller-specific rules are merged here.
-	const rules = mergeRulesForSystemPrompt(undefined, input.rules);
-	return buildClineSystemPrompt({
+	const rules = mergeRulesForSystemPrompt(CLI_BRANDING_RULES, input.rules);
+	const prompt = buildClineSystemPrompt({
 		ide: "Terminal Shell",
 		workspaceRoot: input.cwd,
 		workspaceName: basename(input.cwd),
@@ -35,6 +42,11 @@ export async function resolveSystemPrompt(input: {
 		platform:
 			(typeof process !== "undefined" && process?.platform) || "unknown",
 	});
+	// Only the SDK default's introduction is app branding. Never rewrite a
+	// caller's override, provider brands, or any identifiers elsewhere in it.
+	return input.explicitSystemPrompt?.trim()
+		? prompt
+		: prompt.replace(/^You are Cline,/, `You are ${APP_NAME},`);
 }
 
 const FILE_MENTION_PREFIX = String.raw`(?:\/|~\/|\.{1,2}\/)`;

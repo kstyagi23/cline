@@ -10,6 +10,7 @@ import type {
 } from "@cline/shared";
 import { Chat, ConsoleLogger, type Thread } from "chat";
 import type { Command } from "commander";
+import { CLI_COMMAND } from "../../branding";
 import type { CliLoggerAdapter } from "../../logging/adapter";
 import { createCliLoggerAdapter } from "../../logging/adapter";
 import {
@@ -505,8 +506,7 @@ class WhatsAppConnector extends ConnectorBase<
 				`[whatsapp] connector already running pid=${state.pid} rpc=${state.rpcAddress} url=${state.baseUrl}`,
 			formatBackgroundStartMessage: (pid) =>
 				`[whatsapp] starting background connector pid=${pid} user=${options.userName}`,
-			foregroundHint:
-				"[whatsapp] use `cline connect whatsapp -i ...` to run in the foreground",
+			foregroundHint: `[whatsapp] use \`${CLI_COMMAND} connect whatsapp -i ...\` to run in the foreground`,
 			launchFailureMessage: "failed to launch WhatsApp connector in background",
 		});
 		if (backgroundExitCode !== undefined) {

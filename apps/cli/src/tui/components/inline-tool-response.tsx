@@ -1,6 +1,7 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
 import { useKeyboard, useTerminalDimensions } from "@opentui/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { APP_NAME } from "../../branding";
 import { useTheme } from "../hooks/use-theme";
 import type { RuntimeToolInteraction } from "../types";
 import { getPrintableKeyText, removeLastGrapheme } from "./ask-question-input";
@@ -220,7 +221,7 @@ function ToolApprovalResponse(
 
 	return (
 		<Shell
-			title="Cline needs permission"
+			title={`${APP_NAME} needs permission`}
 			accent={props.accent}
 			inputBackground={props.inputBackground}
 			inputForeground={props.inputForeground}
@@ -400,7 +401,7 @@ function AskQuestionResponse(
 
 	return (
 		<Shell
-			title="Cline is asking a question"
+			title={`${APP_NAME} is asking a question`}
 			accent={props.accent}
 			inputBackground={props.inputBackground}
 			inputForeground={props.inputForeground}

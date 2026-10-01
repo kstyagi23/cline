@@ -1,6 +1,7 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
 import type { ReactNode } from "react";
 import { useEffect, useRef } from "react";
+import { APP_NAME } from "../../../branding";
 import type {
 	LocalCliStatus,
 	ProviderLocalCli,
@@ -922,7 +923,7 @@ export function OnboardingMainMenuScreen(props: {
 				marginTop={1}
 			>
 				<text fg={defaultFg}>
-					<strong>Welcome to Cline</strong>
+					<strong>Welcome to {APP_NAME}</strong>
 				</text>
 				<text fg="gray" marginTop={1}>
 					Connect a model provider to get started.

@@ -31,6 +31,7 @@ import {
 	SessionSource,
 } from "@cline/core";
 import { isLikelyAuthError, type MessageWithMetadata } from "@cline/shared";
+import { APP_NAME } from "../branding";
 import { getPersistedProviderApiKey } from "../commands/auth";
 import { resolveSystemPrompt } from "../runtime/prompt";
 import { subscribeToAgentEvents } from "../runtime/session-events";
@@ -139,6 +140,7 @@ export class AcpAgent implements Agent {
 			},
 			agentInfo: {
 				name,
+				title: APP_NAME,
 				version,
 			},
 			authMethods: ACP_AUTH_METHODS.map((m) => ({

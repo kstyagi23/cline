@@ -1,6 +1,6 @@
 {
 	"name": "@cline/cli",
-	"displayName": "cline",
+	"displayName": "Glyph",
 	"version": "3.0.67",
 	"description": "Autonomous coding agent CLI - capable of creating/editing files, running commands, using the browser, and more",
 	"type": "module",
@@ -36,6 +36,7 @@
 		"url": "https://github.com/cline/cline/issues"
 	},
 	"bin": {
+		"glyph": "src/index.ts",
 		"cline": "src/index.ts"
 	},
 	"engines": {

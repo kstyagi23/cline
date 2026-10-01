@@ -1,5 +1,6 @@
 import { useTerminalDimensions } from "@opentui/react";
 import { useState } from "react";
+import { APP_NAME } from "../../branding";
 import {
 	AutocompleteDropdown,
 	type AutocompleteDropdownProps,
@@ -98,6 +99,8 @@ export function HomeView(props: {
 			<TrackedRobot cursorX={trackedCursorX} cursorY={trackedCursorY} />
 			<box marginTop={1} marginBottom={1} flexShrink={0}>
 				<text fg={defaultFg}>
+					<strong>{APP_NAME}</strong>
+					<span fg="gray"> · </span>
 					<strong>What can I do for you?</strong>
 				</text>
 			</box>

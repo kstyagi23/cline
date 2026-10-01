@@ -15,6 +15,7 @@ import type {
 } from "@cline/shared";
 import { Chat, ConsoleLogger, type Thread, ThreadImpl } from "chat";
 import type { Command } from "commander";
+import { CLI_COMMAND } from "../../branding";
 import { createCliLoggerAdapter } from "../../logging/adapter";
 import {
 	ensureCliHubServer,
@@ -1021,8 +1022,7 @@ class DiscordConnector extends ConnectorBase<
 				`[discord] connector already running pid=${state.pid} rpc=${state.rpcAddress} url=${state.baseUrl}`,
 			formatBackgroundStartMessage: (pid) =>
 				`[discord] starting background connector pid=${pid} application=${options.applicationId}`,
-			foregroundHint:
-				"[discord] use `cline connect discord -i ...` to run in the foreground",
+			foregroundHint: `[discord] use \`${CLI_COMMAND} connect discord -i ...\` to run in the foreground`,
 			launchFailureMessage: "failed to launch Discord connector in background",
 		});
 		if (backgroundExitCode !== undefined) {

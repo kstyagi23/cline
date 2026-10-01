@@ -17,6 +17,18 @@ import {
 const noDetection = { background: null, foreground: null };
 
 describe("theme registry", () => {
+	it("brands the default themes without changing their stored IDs", () => {
+		expect(getThemeDefinition("dark")).toMatchObject({
+			id: "dark",
+			label: "Glyph Dark",
+			description: "Glyph's accents on deep charcoal",
+		});
+		expect(getThemeDefinition("light")).toMatchObject({
+			id: "light",
+			label: "Glyph Light",
+		});
+	});
+
 	it("has unique ids and auto first", () => {
 		const ids = THEMES.map((theme) => theme.id);
 		expect(new Set(ids).size).toBe(ids.length);

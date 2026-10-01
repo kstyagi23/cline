@@ -98,7 +98,7 @@ describe("config view helpers", () => {
 		});
 	});
 
-	it("separates Cline and Agent Plugins into labeled sections", () => {
+	it("separates Glyph and Agent Plugins into labeled sections", () => {
 		const clinePlugin = createItem({
 			kind: "plugin",
 			name: "cline-plugin",
@@ -112,7 +112,7 @@ describe("config view helpers", () => {
 		});
 
 		expect(getConfigPluginSections([clinePlugin, agentPlugin])).toEqual([
-			{ label: "Cline Plugins (1)", items: [clinePlugin] },
+			{ label: "Glyph Plugins (1)", items: [clinePlugin] },
 			{ label: "Agent Plugins (1)", items: [agentPlugin] },
 		]);
 	});

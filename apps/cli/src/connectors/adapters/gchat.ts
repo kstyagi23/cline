@@ -10,6 +10,7 @@ import type {
 } from "@cline/shared";
 import { Chat, ConsoleLogger, type Thread } from "chat";
 import type { Command } from "commander";
+import { CLI_COMMAND } from "../../branding";
 import type { CliLoggerAdapter } from "../../logging/adapter";
 import { createCliLoggerAdapter } from "../../logging/adapter";
 import {
@@ -506,8 +507,7 @@ class GoogleChatConnector extends ConnectorBase<
 				`[gchat] connector already running pid=${state.pid} rpc=${state.rpcAddress} url=${state.baseUrl}`,
 			formatBackgroundStartMessage: (pid) =>
 				`[gchat] starting background connector pid=${pid} user=${options.userName}`,
-			foregroundHint:
-				"[gchat] use `cline connect gchat -i ...` to run in the foreground",
+			foregroundHint: `[gchat] use \`${CLI_COMMAND} connect gchat -i ...\` to run in the foreground`,
 			launchFailureMessage:
 				"failed to launch Google Chat connector in background",
 		});

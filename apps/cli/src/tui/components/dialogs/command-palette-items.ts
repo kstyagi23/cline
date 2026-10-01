@@ -1,3 +1,5 @@
+import { APP_NAME } from "../../../branding";
+
 export type CommandPaletteAction =
 	| "settings"
 	| "change-model"
@@ -146,7 +148,7 @@ const ACTION_ITEMS: Array<{
 	},
 	{
 		action: "quit",
-		label: "Exit Cline",
+		label: `Exit ${APP_NAME}`,
 		shortcut: "Opt+Q",
 		description: "Close the interactive CLI",
 		keywords: ["quit", "exit"],

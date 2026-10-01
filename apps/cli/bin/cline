@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// Binary resolver for Cline CLI.
+// Shared binary resolver for Glyph CLI's glyph and cline commands.
 //
 // This script runs with Node.js (available everywhere npm is) and finds the
 // correct platform-specific compiled binary to execute. The compiled binary
@@ -42,22 +42,22 @@ try {
 		caCerts.shouldWarnApiUnavailable(childEnv)
 	) {
 		console.warn(
-			`[cline] Node ${process.versions.node} cannot read the OS trust store (needs >= 22.15); ` +
+			`[glyph] Node ${process.versions.node} cannot read the OS trust store (needs >= 22.15); ` +
 				"corporate or self-signed CAs may fail TLS. Upgrade Node or set NODE_EXTRA_CA_CERTS.",
 		);
 	}
 	if (debug && outcome) {
 		if (outcome.action === "no-system-certs") {
 			console.warn(
-				"[cline] No OS trust anchors found; relying on the runtime's bundled CAs.",
+				"[glyph] No OS trust anchors found; relying on the runtime's bundled CAs.",
 			);
 		} else if (outcome.action === "write-failed") {
 			console.warn(
-				"[cline] Could not write the managed CA bundle; relying on the runtime's bundled CAs.",
+				"[glyph] Could not write the managed CA bundle; relying on the runtime's bundled CAs.",
 			);
 		} else {
 			console.warn(
-				`[cline] Trust: ${outcome.systemCertCount} OS + ${outcome.userCertCount} user CAs (${outcome.action}) -> ${outcome.path}`,
+				`[glyph] Trust: ${outcome.systemCertCount} OS + ${outcome.userCertCount} user CAs (${outcome.action}) -> ${outcome.path}`,
 			);
 		}
 	}
@@ -81,7 +81,7 @@ function run(target) {
 			(code === "UNKNOWN" || code === "EACCES" || code === "EPERM")
 		) {
 			console.error(
-				"\nWindows refused to start the Cline binary:\n  " +
+				"\nWindows refused to start the Glyph binary:\n  " +
 					target +
 					"\n\n" +
 					"This usually means an application control policy (Smart App Control,\n" +
@@ -168,7 +168,7 @@ function findBinary(startDir) {
 const resolved = findBinary(scriptDir);
 if (!resolved) {
 	console.error(
-		"Could not find the Cline CLI binary for your platform.\n" +
+		"Could not find the Glyph CLI binary for your platform.\n" +
 			"Your platform: " +
 			os.platform() +
 			" " +
@@ -179,7 +179,7 @@ if (!resolved) {
 				return '"' + n + '"';
 			}).join(" or ") +
 			"\n\n" +
-			"Try reinstalling: npm install -g cline",
+			"Try reinstalling the existing package: bun add --global cline",
 	);
 	process.exit(1);
 }

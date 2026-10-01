@@ -1,4 +1,4 @@
-# Cline CLI
+# Glyph CLI
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/7123f9d1-afeb-48d5-93fa-e750dec0ebba" width="70%" />
@@ -29,66 +29,68 @@
 </table>
 </div>
 
-Run Cline in your terminal. Interactive chat for paired sessions, or fully headless for CI/CD and scripting. The CLI shares its agent core with the [Cline VS Code extension](https://marketplace.visualstudio.com/items?itemName=saoudrizwan.claude-dev), JetBrains plugin, and SDK, so plan/act modes, MCP servers, checkpoints, rules, skills, and provider configuration all behave the same across surfaces.
+Run Glyph in your terminal. Interactive chat for paired sessions, or fully headless for CI/CD and scripting. This local fork shares its agent core with the [Cline VS Code extension](https://marketplace.visualstudio.com/items?itemName=saoudrizwan.claude-dev), JetBrains plugin, and SDK, so plan/act modes, MCP servers, checkpoints, rules, skills, and provider configuration all behave the same across surfaces.
 
-## Install
+## Local fork and command compatibility
+
+`glyph` is the canonical command in this fork; `cline` remains a compatibility alias. Both source bins point to the same `src/index.ts`, and generated distribution bins use the same wrapper and compiled `cline` (`cline.exe` on Windows) binary. The Windows installer adds a small `glyph.cmd` shim rather than duplicating the executable.
+
+This is a local rebrand, not a registry migration. The source package remains `@cline/cli`, the generated registry wrapper remains `cline`, and platform packages remain `@cline/cli-*`. Updater package names, provider IDs (including `cline`), `CLINE_*` environment variables, service URLs, protocols, and copyrights are unchanged. Existing storage under `~/.cline` and the Windows install folder `%USERPROFILE%\cline` and `ClineCLI` registry key are retained for upgrade compatibility.
+
+The links above still refer to upstream Cline. Installing upstream `cline` or `cline@nightly` does not install this Glyph fork, and no Glyph registry package is implied. For local development, use Bun from the repository root:
 
 ```sh
-npm install -g cline
+bun run build:sdk
+bun run cli
+bun run cli "Audit this package and propose fixes"
 ```
 
-For nightly builds:
-
-```sh
-npm install -g cline@nightly
-```
-
-Platform binaries are published for macOS, Linux, and Windows on `arm64` and `x64`. The `cline` package resolves the correct binary for your platform via optional dependencies, so no Node, Bun, or Zig runtime is required at install time.
+The examples below use `glyph` when running a locally built distribution. See [DEVELOPMENT.md](./DEVELOPMENT.md) and [DISTRIBUTION.md](./DISTRIBUTION.md) for source setup and packaging details. Platform build targets remain macOS, Linux, and Windows on `arm64` and `x64`; the generated wrapper resolves the matching optional dependency and runs it using the Node wrapper and embedded Bun runtime.
 
 ## Quick start
 
 Run interactively:
 
 ```sh
-cline
+glyph
 ```
 
 Run a single prompt:
 
 ```sh
-cline "Audit this package and propose fixes"
+glyph "Audit this package and propose fixes"
 ```
 
 Pipe input:
 
 ```sh
-cat file.txt | cline "Summarize this"
+cat file.txt | glyph "Summarize this"
 ```
 
-See `cline --help` for the full flag reference.
+See `glyph --help` for the full flag reference. Existing scripts can continue to use `cline` with the same arguments.
 
 ## Use any provider
 
-Cline supports the same providers as the VS Code extension. You can sign in to Cline directly, use your ChatGPT Subscription through `openai-codex`, or bring an API key from Anthropic, OpenAI, Google Gemini, OpenRouter, AWS Bedrock, GCP Vertex, Cerebras, Groq, and any OpenAI-compatible endpoint.
+Glyph supports the same providers as the VS Code extension. You can sign in to Cline directly, use your ChatGPT Subscription through `openai-codex`, or bring an API key from Anthropic, OpenAI, Google Gemini, OpenRouter, AWS Bedrock, GCP Vertex, Cerebras, Groq, and any OpenAI-compatible endpoint.
 
 ```sh
-cline auth                              # interactive sign-in
-cline auth cline                        # OAuth sign-in
-cline auth --provider anthropic --apikey sk-... --modelid claude-sonnet-4-6
+glyph auth                              # interactive sign-in
+glyph auth cline                        # OAuth sign-in (provider ID is unchanged)
+glyph auth --provider anthropic --apikey sk-... --modelid claude-sonnet-4-6
 ```
 
-`cline auth` without a provider opens the interactive auth setup TUI with the same options as the old CLI flow (Sign in with Cline, Sign in with ChatGPT Subscription, Sign in with OCA, or use your own API key).
+`glyph auth` without a provider opens the interactive auth setup TUI with the same options as the old CLI flow (Sign in with Cline, Sign in with ChatGPT Subscription, Sign in with OCA, or use your own API key).
 
 When connecting **OpenAI Compatible**, choose **chat.completions** (the default)
 or **responses** in the **API** field. Press Tab to focus the field, Up/Down to
 choose, then Enter to save. Use the server's API base URL, such as
-`http://localhost:8000/v1`; Cline appends `/chat/completions` or `/responses`.
+`http://localhost:8000/v1`; Glyph appends `/chat/completions` or `/responses`.
 The same choice is available when reconfiguring the provider in the model picker.
 Responses uses the server's Responses API for streaming text, reasoning, and
 function calls. The server must support that API; Chat Completions remains the
 default for existing configurations.
 
-OAuth-supported providers (`cline`, `openai-codex`, `oca`) do not auto-launch a browser on normal startup. Authenticate explicitly first with `cline auth <provider>`. For non-interactive runs, if an OAuth provider is selected and no saved credentials are available, `cline` fails fast with an authentication message instead of launching a hidden browser flow.
+OAuth-supported providers (`cline`, `openai-codex`, `oca`) do not auto-launch a browser on normal startup. Authenticate explicitly first with `glyph auth <provider>`. For non-interactive runs, if an OAuth provider is selected and no saved credentials are available, `glyph` fails fast with an authentication message instead of launching a hidden browser flow.
 
 ## Reasoning effort
 
@@ -106,8 +108,8 @@ model and apply to subsequent requests, preserving the conversation.
 For a single run, pass an effort flag:
 
 ```sh
-cline --reasoning-effort high "Review this change carefully"
-cline -i --thinking low
+glyph --reasoning-effort high "Review this change carefully"
+glyph -i --thinking low
 ```
 
 `--thinking` remains an alias. Omitting both flags uses saved reasoning settings,
@@ -116,27 +118,27 @@ then the provider default. OpenAI-compatible Chat Completions sends
 
 ## Modes
 
-Cline CLI runs in a few different shapes depending on what you need:
+Glyph CLI runs in a few different shapes depending on what you need:
 
-- Interactive TUI: `cline` or `cline -i` opens a full terminal UI with plan/act toggle, slash commands, file mentions, and live tool approvals
-- One-shot: `cline "your prompt"` runs a single turn and exits
-- JSON: `cline --json "..."` streams NDJSON events for piping into other tools
-- Yolo: `cline --yolo "..."` skips approval prompts and exits when the turn finishes
-- Zen: `cline --zen "..."` fires the task to the background hub daemon and exits immediately (see below)
+- Interactive TUI: `glyph` or `glyph -i` opens a full terminal UI with plan/act toggle, slash commands, file mentions, and live tool approvals
+- One-shot: `glyph "your prompt"` runs a single turn and exits
+- JSON: `glyph --json "..."` streams NDJSON events for piping into other tools
+- Yolo: `glyph --yolo "..."` skips approval prompts and exits when the turn finishes
+- Zen: `glyph --zen "..."` fires the task to the background hub daemon and exits immediately (see below)
 
 ## Headless mode for CI/CD
 
-Run Cline with zero interaction for scripting and automation. Pipe input, get JSON output, chain commands, integrate into CI/CD pipelines.
+Run Glyph with zero interaction for scripting and automation. Pipe input, get JSON output, chain commands, integrate into CI/CD pipelines.
 
 ```sh
 # One-shot prompt, auto-approve all tools
-cline --yolo "Run tests and fix any failures"
+glyph --yolo "Run tests and fix any failures"
 
 # Pipe a diff in for review
-git diff origin/main | cline "Review these changes for issues"
+git diff origin/main | glyph "Review these changes for issues"
 
 # NDJSON output for downstream tooling
-cline --json "List all TODO comments" | jq -r 'select(.type == "agent_event" and .event.text) | .event.text'
+glyph --json "List all TODO comments" | jq -r 'select(.type == "agent_event" and .event.text) | .event.text'
 ```
 
 ## Features
@@ -154,46 +156,46 @@ cline --json "List all TODO comments" | jq -r 'select(.type == "agent_event" and
 ## Usage
 
 ```sh
-# Start Cline CLI without a prompt to enter interactive mode
-cline
+# Start Glyph CLI without a prompt to enter interactive mode
+glyph
 
 # Single prompt (one-shot) - includes tools, spawn, and teams
-cline "Audit this package and propose fixes"
+glyph "Audit this package and propose fixes"
 
 # Interactive mode with a starting prompt
-cline -i "Let's work on this together. First, analyze the current state."
+glyph -i "Let's work on this together. First, analyze the current state."
 
 # With a custom system prompt
-cline -i -s "You are a pirate" "Tell me about the sea"
+glyph -i -s "You are a pirate" "Tell me about the sea"
 
 # Require approval before each tool call
-cline --auto-approve false "Inspect and modify this repository"
+glyph --auto-approve false "Inspect and modify this repository"
 
 # Explicit yolo: enables submit_and_exit and disables spawn/team tools by default
-cline --yolo --retries 5 "Refactor this package"
+glyph --yolo --retries 5 "Refactor this package"
 
 # Override consecutive internal mistake (retry) limit (default: 3)
-cline --retries 5 "Fix failing tests"
+glyph --retries 5 "Fix failing tests"
 
 # Team workflow with persistent name
-cline --team-name my-team "Plan, implement, and verify release checklist"
-cline --team-name my-team "Continue yesterday's team workflow"
+glyph --team-name my-team "Plan, implement, and verify release checklist"
+glyph --team-name my-team "Continue yesterday's team workflow"
 
 # Show verbose run stats (elapsed time, tokens, estimated cost when available)
-cline -v "Explain quantum computing"
+glyph -v "Explain quantum computing"
 
 # Use a specific provider, model, and access token for a single prompt
-cline -P openrouter -m google/gemini-3-pro -k sk-... "Set up a storybook"
+glyph -P openrouter -m google/gemini-3-pro -k sk-... "Set up a storybook"
 
 # Use a different model with the last used provider
-cline -m anthropic/claude-opus-4-6 "Explain string theory"
+glyph -m anthropic/claude-opus-4-6 "Explain string theory"
 
 # Stream structured NDJSON output
-cline --json "Summarize this repository"
+glyph --json "Summarize this repository"
 
 # Quick provider setup
-cline auth --provider anthropic --apikey sk-... --modelid claude-sonnet-4-6
-cline auth --provider openai-native --apikey sk-... --modelid gpt-5 --baseurl https://api.example.com/v1
+glyph auth --provider anthropic --apikey sk-... --modelid claude-sonnet-4-6
+glyph auth --provider openai-native --apikey sk-... --modelid gpt-5 --baseurl https://api.example.com/v1
 ```
 
 ### MCP servers
@@ -201,54 +203,54 @@ cline auth --provider openai-native --apikey sk-... --modelid gpt-5 --baseurl ht
 Manage MCP servers with the interactive wizard:
 
 ```sh
-cline mcp
-cline config mcp
+glyph mcp
+glyph config mcp
 ```
 
-Open the add-server wizard with the name, transport, and command or URL already filled in with `cline mcp install` (`cline mcp add` also works). Stdio servers use everything after `--` as the command and arguments:
+Open the add-server wizard with the name, transport, and command or URL already filled in with `glyph mcp install` (`glyph mcp add` also works). Stdio servers use everything after `--` as the command and arguments:
 
 ```sh
-cline mcp install fs -- npx -y @modelcontextprotocol/server-filesystem /tmp
+glyph mcp install fs -- bunx -y @modelcontextprotocol/server-filesystem /tmp
 ```
 
 Remote HTTP and SSE servers take a name, transport, and URL. The wizard still asks for auth details before saving:
 
 ```sh
-cline mcp install ctx7 --transport http https://mcp.context7.com/mcp
-cline mcp install events --transport sse https://example.com/sse
+glyph mcp install ctx7 --transport http https://mcp.context7.com/mcp
+glyph mcp install events --transport sse https://example.com/sse
 ```
 
 Because this command opens the wizard, it requires a TTY.
 
 ### Connectors
 
-Bridge a chat surface into RPC-backed Cline sessions. Each conversation thread maps to a session with full context. Supported platforms: Telegram, Slack, Google Chat, WhatsApp, and Linear.
+Bridge a chat surface into RPC-backed Glyph sessions. Each conversation thread maps to a session with full context. Supported platforms: Telegram, Slack, Google Chat, WhatsApp, and Linear.
 
 ```sh
 # Telegram (polling mode)
-cline connect telegram -k 123456:ABCDEF...
+glyph connect telegram -k 123456:ABCDEF...
 
 # Slack (webhook mode)
-cline connect slack --bot-token $SLACK_BOT_TOKEN --signing-secret $SLACK_SIGNING_SECRET --base-url https://your-domain.com
+glyph connect slack --bot-token $SLACK_BOT_TOKEN --signing-secret $SLACK_SIGNING_SECRET --base-url https://your-domain.com
 
 # Slack (socket mode)
-cline connect slack --bot-token $SLACK_BOT_TOKEN --app-token $SLACK_APP_TOKEN
+glyph connect slack --bot-token $SLACK_BOT_TOKEN --app-token $SLACK_APP_TOKEN
 
 # Google Chat (webhook mode)
-cline connect gchat --base-url https://your-domain.com
+glyph connect gchat --base-url https://your-domain.com
 
 # WhatsApp (webhook mode)
-cline connect whatsapp --base-url https://your-domain.com
+glyph connect whatsapp --base-url https://your-domain.com
 
 # Linear (webhook mode)
-cline connect linear --api-key $LINEAR_API_KEY --base-url https://your-domain.com
+glyph connect linear --api-key $LINEAR_API_KEY --base-url https://your-domain.com
 
 # Stop connector bridges and delete their sessions
-cline connect --stop
-cline connect --stop telegram
+glyph connect --stop
+glyph connect --stop telegram
 ```
 
-In chat surfaces, connector slash commands include `/help`, `/start`, `/new`, `/clear`, `/whereami`, `/tools`, `/yolo`, `/cwd <path>`, `/schedule`, `/abort`, and `/exit`. Run `cline connect <adapter> --help` to see the full flag list for any adapter.
+In chat surfaces, connector slash commands include `/help`, `/start`, `/new`, `/clear`, `/whereami`, `/tools`, `/yolo`, `/cwd <path>`, `/schedule`, `/abort`, and `/exit`. Run `glyph connect <adapter> --help` to see the full flag list for any adapter.
 
 ### Schedules
 
@@ -259,19 +261,19 @@ provider and model. If only `--provider` is given, the schedule uses that
 provider's saved model.
 
 ```sh
-cline schedule create "Daily code review" \
+glyph schedule create "Daily code review" \
   --cron "0 9 * * MON-FRI" \
   --prompt "Review PRs opened yesterday and summarize issues." \
   --workspace /path/to/repo \
   --timeout 3600 \
   --tags automation,review
 
-cline schedule list
-cline schedule get <schedule-id>
-cline schedule trigger <schedule-id>
-cline schedule history <schedule-id> --limit 20
-cline schedule export <schedule-id> > daily-review.yaml
-cline schedule import ./daily-review.yaml
+glyph schedule list
+glyph schedule get <schedule-id>
+glyph schedule trigger <schedule-id>
+glyph schedule history <schedule-id> --limit 20
+glyph schedule export <schedule-id> > daily-review.yaml
+glyph schedule import ./daily-review.yaml
 ```
 
 Schedules can route results back to chat surfaces with `--delivery-adapter`, `--delivery-bot`, and `--delivery-thread`.
@@ -309,27 +311,27 @@ Schedules can route results back to chat surfaces with `--delivery-adapter`, `--
 
 ## Top-level commands
 
-- `cline config` - Open the interactive config view
-- `cline history|h [options]` - List session history or manage saved sessions
-- `cline version` - Show CLI version
-- `cline update [options]` - Check for CLI and kanban updates
-- `cline auth <provider>` - Authenticate or seed provider credentials
-- `cline connect <adapter>` - Run a chat connector bridge (`telegram`, `gchat`, `whatsapp`)
-- `cline connect --stop [adapter]` - Stop connector bridge processes and their sessions
-- `cline schedule <command>` - Create and manage scheduled runs
-- `cline doctor` - Inspect local CLI health and stale processes
-- `cline doctor fix` - Kill stale local RPC listeners and old CLI processes
-- `cline doctor log` - Open the CLI runtime log file
-- `cline hook` - Handle a hook payload from stdin
-- `cline hub` - Manage the local hub daemon
-- `cline kanban` - Run the external `kanban` app, installing it first when needed
+- `glyph config` - Open the interactive config view
+- `glyph history|h [options]` - List session history or manage saved sessions
+- `glyph version` - Show CLI version
+- `glyph update [options]` - Check for CLI and kanban updates
+- `glyph auth <provider>` - Authenticate or seed provider credentials
+- `glyph connect <adapter>` - Run a chat connector bridge (`telegram`, `gchat`, `whatsapp`)
+- `glyph connect --stop [adapter]` - Stop connector bridge processes and their sessions
+- `glyph schedule <command>` - Create and manage scheduled runs
+- `glyph doctor` - Inspect local CLI health and stale processes
+- `glyph doctor fix` - Kill stale local RPC listeners and old CLI processes
+- `glyph doctor log` - Open the CLI runtime log file
+- `glyph hook` - Handle a hook payload from stdin
+- `glyph hub` - Manage the local hub daemon
+- `glyph kanban` - Run the external `kanban` app, installing it first when needed
 
 ## Zen mode
 
 `--zen` (alias `-z`) runs a task in the background hub daemon and exits the CLI immediately. It is intended for long-running tasks you want to fire off and walk away from.
 
 ```sh
-cline --zen "Refactor the authentication module and add unit tests"
+glyph --zen "Refactor the authentication module and add unit tests"
 ```
 
 Behavior:
@@ -337,7 +339,7 @@ Behavior:
 - The CLI starts (or reuses) the local hub daemon, submits the task, then exits. It does not stream output or stay attached to the session.
 - Because there is no human in the loop once the CLI exits, zen sessions run with full tool auto-approval (same semantics as `--yolo`). `spawn`/`team` tools are disabled by default for safety, consistent with yolo-mode defaults.
 - If the Cline menubar app is running, it subscribes to hub `ui.notify` events and will surface a system notification when the task completes.
-- If the menubar app is not running, there is no live UI for the task. Use `cline history` later to find the session and inspect the result.
+- If the menubar app is not running, there is no live UI for the task. Use `glyph history` later to find the session and inspect the result.
 - `--zen` is incompatible with `--data-dir` (the implicit sandbox requires a local backend that exits with the CLI) and with `--tui` (there is no terminal UI to render into).
 
 ## Tool approval
@@ -345,7 +347,7 @@ Behavior:
 Tool calls are auto-approved by default. Use `--auto-approve false` to require review before tool execution.
 
 ```sh
-cline --auto-approve false "Inspect and modify this repository"
+glyph --auto-approve false "Inspect and modify this repository"
 ```
 
 When approval is required, the CLI prompts in TTY mode:
@@ -389,7 +391,7 @@ Desktop-integrated approval mode is also supported via env wiring (`CLINE_TOOL_A
 
 The CLI automatically trusts your operating system's certificate store, so it
 works behind corporate TLS-inspecting proxies and with self-signed/internal
-endpoints without any setup. On launch the `cline` wrapper harvests the OS trust
+endpoints without any setup. On launch the shared `glyph` / `cline` wrapper harvests the OS trust
 anchors and writes them to `~/.cline/cli-node-extra-ca-certs.pem`, then points
 the runtime's `NODE_EXTRA_CA_CERTS` at that bundle. The file is regenerated when
 it changes and is safe to delete (it is rebuilt on the next run).

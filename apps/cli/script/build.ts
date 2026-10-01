@@ -58,7 +58,7 @@ const pkg = JSON.parse(readFileSync(join(cliDir, "package.json"), "utf-8"));
 const version: string = pkg.version;
 const repository: unknown = pkg.repository;
 
-console.log(`Building @cline/cli v${version}`);
+console.log(`Building Glyph CLI (@cline/cli) v${version}`);
 
 const buildOptions = parseBuildOptions(process.argv.slice(2));
 
@@ -359,11 +359,13 @@ for (const item of targets) {
 			{
 				name,
 				version,
-				description: `Cline CLI binary for ${displayOs} ${item.arch}`,
+				displayName: "Glyph",
+				description: `Glyph CLI binary for ${displayOs} ${item.arch}`,
 				os: [item.os],
 				cpu: [item.arch],
 				...(repository ? { repository } : {}),
 				bin: {
+					glyph: `bin/${binaryName}`,
 					cline: `bin/${binaryName}`,
 				},
 			},

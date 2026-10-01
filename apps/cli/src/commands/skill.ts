@@ -1,4 +1,5 @@
 import { type SpawnOptions, spawn } from "node:child_process";
+import { CLI_COMMAND } from "../branding";
 
 export interface SkillCommandIo {
 	writeln: (text?: string) => void;
@@ -145,7 +146,7 @@ export async function runSkillCommand(
 			cleanup();
 			if (error.code === "ENOENT") {
 				io.writeErr(
-					'npx was not found. Install Node.js (which includes npx) to use "cline skill".',
+					`npx was not found. Install Node.js (which includes npx) to use "${CLI_COMMAND} skill".`,
 				);
 			} else {
 				io.writeErr(`Failed to run npx ${SKILLS_PACKAGE}: ${error.message}`);

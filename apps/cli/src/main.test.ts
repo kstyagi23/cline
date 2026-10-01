@@ -645,7 +645,10 @@ describe("runCli lightweight command dispatch", () => {
 			),
 		);
 		expect(consoleError).toHaveBeenCalledWith(
-			expect.stringContaining('Use "cline --help"'),
+			expect.stringContaining('Use "glyph --help"'),
+		);
+		expect(consoleError).toHaveBeenCalledWith(
+			expect.stringContaining('for example: glyph "fix the tests"'),
 		);
 		expect(runtimeMocks.runAgent).not.toHaveBeenCalled();
 		expect(mockState.runAgentImports).toBe(0);

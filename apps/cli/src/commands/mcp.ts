@@ -8,6 +8,7 @@ import {
 	type McpUninstallResult as CoreMcpUninstallResult,
 	uninstallMcpServer,
 } from "@cline/core";
+import { CLI_COMMAND } from "../branding";
 import type { McpAddDefaults } from "../wizards/mcp";
 
 export { buildMcpInstallTransport, uninstallMcpServer } from "@cline/core";
@@ -102,7 +103,7 @@ export async function runMcpInstallCommand(
 			options.isTty ?? (process.stdin.isTTY && process.stdout.isTTY);
 		if (!isTty) {
 			throw new Error(
-				"cline mcp install opens the MCP wizard and requires a TTY. Pass --yes to install noninteractively.",
+				`${CLI_COMMAND} mcp install opens the MCP wizard and requires a TTY. Pass --yes to install noninteractively.`,
 			);
 		}
 		const defaults = buildMcpInstallDefaults(options);

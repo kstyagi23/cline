@@ -1,3 +1,4 @@
+import { APP_NAME } from "../branding";
 import {
 	diffPalettes,
 	getDefaultForeground,
@@ -157,15 +158,15 @@ export const THEMES: readonly ThemeDefinition[] = [
 	},
 	{
 		id: "dark",
-		label: "Cline Dark",
-		description: "Cline's accents on deep charcoal",
+		label: `${APP_NAME} Dark`,
+		description: `${APP_NAME}'s accents on deep charcoal`,
 		variant: "dark",
 		background: "#14161b",
 		foreground: "#e8eaed",
 	},
 	{
 		id: "light",
-		label: "Cline Light",
+		label: `${APP_NAME} Light`,
 		description: "Crisp white, high-contrast accents",
 		variant: "light",
 		background: "#ffffff",

@@ -1,6 +1,7 @@
 import type { UserInstructionConfigService } from "@cline/core";
 import { HubSessionClient } from "@cline/core";
 import type { ChatStartSessionRequest } from "@cline/shared";
+import { APP_NAME } from "../branding";
 import { resolveCliSessionMetadata } from "../utils/enterprise";
 import { ensureCliHubServer } from "../utils/hub-runtime";
 import { c, emitJsonLine, writeErr, writeln } from "../utils/output";
@@ -65,7 +66,7 @@ export async function runZen(
 		address: hubUrl,
 		authToken: hubAuthToken,
 		clientType: "cli-zen",
-		displayName: "Cline CLI (zen)",
+		displayName: `${APP_NAME} CLI (zen)`,
 		workspaceRoot,
 		cwd: config.cwd,
 	});
